@@ -7,14 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Umbraco.Cms" Version="13.0.0" />
-    <PackageReference Include="Umbraco.Commerce" Version="13.0.0" />
-    <PackageReference Include="uSync" Version="13.0.0" />
+    <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
-    <Folder Include="Controller\" />
+    <PackageReference Include="Umbraco.Cms" Version="13.0.0" />
+    <PackageReference Include="Umbraco.Commerce" Version="13.0.0" />
+    <PackageReference Include="uSync" Version="13.0.0" />
   </ItemGroup>
 
 </Project>
