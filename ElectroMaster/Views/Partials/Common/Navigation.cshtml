@@ -1,23 +1,34 @@
 ﻿@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
-	
-	<!-- NAVIGATION -->
-	<nav id="navigation">
-		<!-- container -->
-		<div class="container">
-			<!-- responsive-nav -->
-			<div id="responsive-nav">
-				<!-- NAV -->
-				<ul class="main-nav nav navbar-nav">
-					<li class="active"><a href="#">Home</a></li>
-					<li><a href="#">Laptops</a></li>
-					<li><a href="#">Smartphones</a></li>
-					<li><a href="#">Cameras</a></li>
-					<li><a href="#">Accessories</a></li>
-				</ul>
-				<!-- /NAV -->
-			</div>
-			<!-- /responsive-nav -->
-		</div>
-		<!-- /container -->
-	</nav>
-	<!-- /NAVIGATION -->
+
+
+@{
+
+    var Category = Umbraco.ContentAtRoot()
+                            .DescendantsOrSelf<Category>()
+                            .Where(x => x.IsVisible())
+                            ;
+}
+
+<!-- NAVIGATION -->
+<nav id="navigation">
+    <!-- container -->
+    <div class="container">
+        <!-- responsive-nav -->
+        <div id="responsive-nav">
+            <!-- NAV -->
+            <ul class="main-nav nav navbar-nav">
+               
+                @foreach (var item in Category)
+                {
+                    <li>
+                        <a href="@item.Url()">@item.Name()</a>
+                    </li>
+                }               
+            </ul>
+            <!-- /NAV -->
+        </div>
+        <!-- /responsive-nav -->
+    </div>
+    <!-- /container -->
+</nav>
+<!-- /NAVIGATION -->

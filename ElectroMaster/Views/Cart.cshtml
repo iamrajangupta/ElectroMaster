@@ -1,0 +1,77 @@
+﻿@using Umbraco.Cms.Web.Common.PublishedModels
+@using Umbraco.Commerce.Core.Api
+@using Umbraco.Commerce.Core.Models
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.Cart> // Assuming model type
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
+@using Umbraco.Cms.Core.Models
+@using Microsoft.AspNetCore.Mvc;
+@using System.Collections.Generic;
+@using Umbraco.Commerce.Extensions;
+@using Umbraco.Extensions;
+
+@{
+   
+    Layout = "Master.cshtml";
+    var store = Model.Value<StoreReadOnly>("store", fallback: Fallback.ToAncestors);
+    var Order = CommerceApi.Instance.GetCurrentOrder(store.Id);
+}
+
+
+
+@if ( Order != null && Order.OrderLines != null && Order.OrderLines.Any())
+{
+    <form method="post" action="/CartSurface/UpdateCart">
+        <table>
+            <!-- Table header -->
+            <thead>
+                <!-- Header row -->
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Loop through each item in the cart -->
+                @foreach (var item in Order.OrderLines)
+                {
+                    <tr>
+                        <!-- Display item details -->
+                        <td>@item.Name</td>
+                        <td>@item.UnitPrice.WithoutAdjustments.Formatted()</td>
+                        <td>
+                            <!-- Input field for quantity -->
+                            <input type="hidden" name="orderLines[@item.Id].Id" value="@item.Id" />
+                            <input type="number" name="orderLines[@item.Id].Quantity" value="@item.Quantity" class="bg-gray-200 p-2 w-16" />
+                        </td>
+                        <td>@item.TotalPrice.WithoutAdjustments.Formatted()</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <!-- Footer row with subtotal and checkout button -->
+                <tr>
+                    <td colspan="3">Subtotal</td>
+                    <td> @Order.SubtotalPrice.WithoutAdjustments.Formatted()</td>
+                </tr>
+                <tr>
+                    <td colspan="4">
+                        <div>
+                            <button type="submit">Refresh Cart</button>
+                            <!-- Here, provide a valid URL or route for the checkout -->
+                            <a href="/checkout" class="align-middle font-bold border-4 border-gray-900 bg-gray-900 text-white px-6 py-3 ml-4 hover:bg-teal-400 hover:border-teal-400 hover:text-white">Checkout</a>
+                        </div>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </form>
+}
+else
+{
+    <h2>Your cart is empty</h2>
+}
+
+
+

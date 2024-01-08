@@ -1,6 +1,164 @@
-﻿@using Umbraco.Cms.Web.Common.PublishedModels;
+﻿@using Umbraco.Cms.Core.Models
+@using Umbraco.Cms.Web.Common.PublishedModels;
 @inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.Category>
 @using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
+@using Umbraco.Commerce.Core.Api
+@using Umbraco.Commerce.Core.Models
 @{
-	Layout = null;
+    Layout = "Master.cshtml";
 }
+
+@{
+    string currentPageName = Model.Name;
+    var Products = Umbraco.ContentAtRoot()
+                            .DescendantsOrSelf<Product>()
+                            .Where(x => x.IsVisible())
+                            .ToList();
+
+    var store = Model.Value<StoreReadOnly>("store", fallback: Fallback.ToAncestors);
+}
+
+<!-- SECTION -->
+<div class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <!-- STORE -->
+            <div id="store" class="col-md-12">
+                <!-- store top filter -->
+                <div class="store-filter clearfix">
+                    <div class="store-sort">
+                        <label>
+                            Sort By:
+                            <select class="input-select">
+                                <option value="0">Popular</option>
+                                <option value="1">Position</option>
+                            </select>
+                        </label>
+
+                        <label>
+                            Show:
+                            <select class="input-select">
+                                <option value="0">20</option>
+                                <option value="1">50</option>
+                            </select>
+                        </label>
+                    </div>
+                    <ul class="store-grid">
+                        <li class="active"><i class="fa fa-th"></i></li>
+                        <li><a href="#"><i class="fa fa-th-list"></i></a></li>
+                    </ul>
+                </div>
+                <!-- /store top filter -->
+                <!-- store products -->
+                <div class="row">
+
+                    @foreach (var item in Products)
+                    {
+                        var categoryType = item.Value<IEnumerable<IPublishedContent>>("categoryType", fallback: Fallback.ToAncestors);
+                        var filteredProducts = categoryType.Where(node => node.Name == currentPageName).ToList();
+
+                        var productImage = item.Value<MediaWithCrops>("image", fallback: Fallback.ToAncestors);
+                        var productUrl = productImage != null ? productImage.Url() : null;
+
+                        var product = CommerceApi.Instance.GetProduct(store.Id, item.Key.ToString(), "en-GB");
+                        var prices = product.Prices.ToList();
+                        var price = prices[0].Value;
+                        var productReference = item.Key.ToString();
+
+                        if (filteredProducts.Any())
+                        {
+                            <!-- product -->
+                            <a href="@item.Url()">
+                                <div class="col-md-4 col-xs-6">
+                                    <div class="product">
+                                        <div class="product-img">
+                                            @if (productImage != null)
+                                            {
+                                                <img src="@productImage.GetCropUrl("productImage")" alt="">
+                                            }
+                                        </div>
+                                        <div class="product-body">
+                                            <p class="product-category">Category</p>
+                                            <h3 class="product-name">@product.Name</h3>
+                                            <h4 class="product-price">$@price <del class="product-old-price">$990.00</del></h4>
+                                            <div class="product-rating">
+                                            </div>
+                                            <div class="product-btns">
+                                                <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
+                                                <button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
+                                                <button class="quick-view"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
+                                            </div>
+                                        </div>
+                                        <div class="add-to-cart">
+                                            @using (Html.BeginUmbracoForm("AddToCart", "CartSurface"))
+                                            {
+                                                @Html.Hidden("productReference", productReference);                                               
+                                                <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+
+                            <!-- /product -->
+                        }
+                    }
+                </div>
+                <!-- /store products -->
+                <!-- store bottom filter -->
+                <div class="store-filter clearfix">
+                    <span class="store-qty">Showing 20-100 products</span>
+                    <ul class="store-pagination">
+                        <li class="active">1</li>
+                        <li><a href="#">2</a></li>
+                        <li><a href="#">3</a></li>
+                        <li><a href="#">4</a></li>
+                        <li><a href="#"><i class="fa fa-angle-right"></i></a></li>
+                    </ul>
+                </div>
+                <!-- /store bottom filter -->
+            </div>
+            <!-- /STORE -->
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /SECTION -->
+<!-- NEWSLETTER -->
+<div id="newsletter" class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="newsletter">
+                    <p>Sign Up for the <strong>NEWSLETTER</strong></p>
+                    <form>
+                        <input class="input" type="email" placeholder="Enter Your Email">
+                        <button class="newsletter-btn"><i class="fa fa-envelope"></i> Subscribe</button>
+                    </form>
+                    <ul class="newsletter-follow">
+                        <li>
+                            <a href="#"><i class="fa fa-facebook"></i></a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-twitter"></i></a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-instagram"></i></a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-pinterest"></i></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /NEWSLETTER -->
