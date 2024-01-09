@@ -1,0 +1,121 @@
+﻿@using ElectroMaster.Core.Models.System.Checkout
+@using Umbraco.Cms.Web.Common.PublishedModels;
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
+
+@{
+    Layout = "Master.cshtml";
+}
+
+@using (Html.BeginUmbracoForm("UpdateOrderInformation", "CheckoutSurface"))
+{
+
+    <div class="section">
+        <!-- container -->
+        <div class="container">
+            <!-- row -->
+            <div class="row">
+            <h1 class="title">YOUR INFORMATION</h1>
+                <div class="col-md-6">
+                    <!-- Billing Details -->                 
+                    <div class="billing-details">
+                        <div class="section-title">
+                            <h4 class="title">Billing address</h4>
+                        </div>
+                        <div class="form-group">                          
+                            <input class="input" type="text" name="billingAddress.FirstName" placeholder="First Name">
+                        </div>
+                        <div class="form-group">
+                            <input class="input" type="text" name="billingAddress.LastName" placeholder="Last Name">
+                        </div>
+                        <div class="form-group">
+                            <input class="input" type="email" name="email" placeholder="Email">
+                        </div>
+                        <div class="form-group">
+                            <input class="input" type="text" name="billingAddress.Line1" placeholder="BillingAddress Line1">
+                        </div>
+                        <div class="form-group">
+                            <input class="input" type="text" name="billingAddress.Line2" placeholder="BillingAddress Line2">
+                        </div>
+                        <div class="form-group">
+                            <input class="input" type="text" name="billingAddress.City" placeholder="BillingAddress City">
+                        </div>
+                        <div class="form-group">
+                            <input class="input" type="text" name="billingAddress.ZipCode" placeholder="ZIP Code">
+                        </div>
+                        <div class="form-group">
+                            <input class="input" type="tel" name="billingAddress.Telephone" placeholder="Telephone">
+                            <input name="billingAddress.Country" type="text" value="5ec6dc87-7b28-4abf-b0c0-018cd87f4a68" style="display:none;" />
+
+                        </div>
+                        <div class="form-group">
+                            <div class="input-checkbox">
+                                <input type="checkbox" id="create-account">                            
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /Billing Details -->                 
+                </div>
+                <div class="col-md-6">                  
+                    <!-- Shiping Details -->
+                    <div class="shiping-details">
+                        <div class="section-title">
+                            <h4 class="title">Shiping address</h4>
+                        </div>
+                        <div class="input-checkbox">
+                            <input type="checkbox" id="shiping-address">
+                            <label for="shiping-address">
+                                <span></span>
+                                Ship to a diffrent address?
+                            </label>
+                            <div class="caption">
+                                <div class="form-group">
+                                    <input class="input" type="text" name="shippingAddress.FirstName" placeholder="First Name">
+                                </div>
+                                <div class="form-group">
+                                    <input class="input" type="text" name="shippingAddress.LastName" placeholder="Last Name">
+                                </div>
+
+                                <div class="form-group">
+                                    <input class="input" type="text" name="shippingAddress.Line1" placeholder="ShippingAddress Line1">
+                                </div>
+                                <div class="form-group">
+                                    <input class="input" type="text" name="shippingAddress.Line2" placeholder="shippingAddress Line2">
+                                </div>
+                                <div class="form-group">
+                                    <input class="input" type="text" name="shippingAddress.City" placeholder="ShippingAddress City">
+                                </div>
+                                <div class="form-group">
+                                    <input class="input" type="text" name="shippingAddress.ZipCode" placeholder="ZIP Code">
+                                </div>
+                                <div class="form-group">
+                                    <input class="input" type="tel" name="shippingAddress.Telephone" placeholder="Telephone">
+                                    <input name="shippingAddress.Country" type="text" value="5ec6dc87-7b28-4abf-b0c0-018cd87f4a68" style="display:none;" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /Shiping Details -->                  
+                </div>
+            </div>
+            <!-- /row -->
+            <!-- Order notes -->
+            <div class="order-notes">
+                <textarea name="comments" class="input" placeholder="Order Notes"></textarea>
+            </div>
+            <label>
+                <input name="marketingOptIn" type="checkbox" /> Keep me up to date on news and exclusive offers
+            </label>
+            <!-- /Order notes -->
+            <br /><br />
+            <button class="primary-btn col-md-12" type="submit">Update Information</button>
+
+        </div>
+        <!-- /container -->
+    </div>
+         
+    <!-- /SECTION -->
+}
+
+
+
+

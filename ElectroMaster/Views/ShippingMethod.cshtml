@@ -1,0 +1,37 @@
+﻿@using Umbraco.Cms.Web.Common.PublishedModels
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.ShippingMethod>
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels
+@using Umbraco.Commerce.Core.Api
+@using Umbraco.Commerce.Core.Models
+@{
+    Layout = "Master.cshtml";
+
+      
+
+    var store = Model.Value<StoreReadOnly>("store", fallback: Fallback.ToAncestors);
+    var Order = CommerceApi.Instance.GetCurrentOrder(store.Id);
+    var ShippingMethods = CommerceApi.Instance.GetShippingMethods(store.Id);
+
+    var ShippingCountry = Order.ShippingInfo.CountryId.HasValue
+           ? UmbracoCommerceApi.Instance.GetCountry(Order.ShippingInfo.CountryId.Value)
+           : null;
+}
+
+<h3 class="text-xl font-medium mb-4">Shipping Method</h3>
+@using (Html.BeginUmbracoForm("UpdateOrderShippingMethod", "CheckoutSurface"))
+{
+    <ul class="border border-gray-300 rounded">
+        @foreach (var item in ShippingMethods.Select((sm, i) => new { ShippingMethod = sm, Index = i }))
+        {
+            <li class="border-gray-300 @(item.Index > 0 ? "border-t " : "")">
+                <label class="flex items-center py-4 px-4 cursor-pointer hover:bg-gray-100">
+                    <input name="shippingMethod" type="radio" value="@item.ShippingMethod.Id" class="mr-3" @((Order.ShippingInfo.ShippingMethodId.HasValue && Order.ShippingInfo.ShippingMethodId.Value == item.ShippingMethod.Id) || (!Order.ShippingInfo.ShippingMethodId.HasValue && ShippingCountry != null && ShippingCountry.DefaultShippingMethodId == item.ShippingMethod.Id) ? "checked=\"checked\"" : "") required />
+                    <span class="font-medium">@item.ShippingMethod.Name</span>                 
+                </label>
+            </li>
+        }
+    </ul>
+
+    <button type="submit">Update ShippingMethod</button>
+
+}
