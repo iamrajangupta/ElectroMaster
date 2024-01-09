@@ -16,8 +16,11 @@
                                     .Where(x => x.IsVisible()).Take(3);
 
     var Products = Umbraco.ContentAtRoot()
-                                    .DescendantsOrSelf<Product>()
-                                    .Where(x => x.IsVisible()).Take(4);
+                        .DescendantsOrSelf<Product>()
+                        .Where(x => x.IsVisible())
+                        .OrderByDescending(x => x.CreateDate) // Assuming there's a CreateDate property
+                        .Take(4);
+
 
     var store = Model.Value<StoreReadOnly>("store", fallback: Fallback.ToAncestors);
 
