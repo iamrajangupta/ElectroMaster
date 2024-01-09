@@ -2132,10 +2132,6 @@ textarea.input {
   margin: 15px 0px;
 }
 
-.checkoutsutoatal {
-    font-size: 24px;
-    color: #D10024;
-}
 
 /*=========================================================
 	13 -> RESPONSIVE
@@ -2193,4 +2189,48 @@ textarea.input {
     float: none;
     margin-top: 10px;
   }
+}
+/*=========================================================
+	14 -> Custom Changes
+===========================================================*/
+
+.checkoutsutoatal {
+    font-size: 26px;
+    color: #D10024;
+    text-align: right; 
+    padding-top: 20px; 
+    white-space: nowrap; 
+}
+
+.red-icon {
+    color: red;
+}
+
+.remove-from-cart-btn {
+    border: none; /* Remove button border */
+    background: none; /* Remove button background */
+    padding: 0; /* Remove button padding */
+    cursor: pointer; /* Set cursor to pointer for interaction */
+}
+
+.product-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.product-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.product-name {
+    margin: 0; /* Reset margin */
+    font-size: 12px; /* Adjust font size if needed */
+}
+
+.product-image-small {
+    width: 50px; /* Fixed width for the product image */
+    height: auto; /* Maintain aspect ratio */
 }

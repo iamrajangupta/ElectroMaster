@@ -18,6 +18,7 @@ using Umbraco.Cms.Web.Website.Controllers;
 using Umbraco.Commerce.Core.Api;
 using Umbraco.Commerce.Core.Models;
 using Umbraco.Commerce.Extensions;
+using static Lucene.Net.Documents.Field;
 
 namespace ElectroMaster.Core.Controller
 {
@@ -25,7 +26,9 @@ namespace ElectroMaster.Core.Controller
 	{
 		private readonly IUmbracoCommerceApi _commerceApi;
 
-		public CartSurfaceController(IUmbracoContextAccessor umbracoContextAccessor, IUmbracoDatabaseFactory databaseFactory,
+		
+
+        public CartSurfaceController(IUmbracoContextAccessor umbracoContextAccessor, IUmbracoDatabaseFactory databaseFactory,
 			ServiceContext services, AppCaches appCaches, IProfilingLogger profilingLogger, IPublishedUrlProvider publishedUrlProvider,
 			IUmbracoCommerceApi commerceApi)
 			: base(umbracoContextAccessor, databaseFactory, services, appCaches, profilingLogger, publishedUrlProvider)
@@ -33,16 +36,18 @@ namespace ElectroMaster.Core.Controller
 			_commerceApi = commerceApi;
 		}
 
+		
+
+					
 		[HttpPost]
 		public IActionResult AddToCart(AddToCartDto postModel)
 		{
+            var store = CurrentPage.AncestorOrSelf<Home>()?.Store;
 			try
 			{
 				_commerceApi.Uow.Execute(uow =>
 				{
-					var store = CurrentPage.AncestorOrSelf<Home>()?.Store;
-					
-					var order = _commerceApi.GetOrCreateCurrentOrder(store.Id)
+                    var order = _commerceApi.GetOrCreateCurrentOrder(store.Id)
 						.AsWritable(uow)
 						.AddProduct(postModel.ProductReference, postModel.ProductVariantReference, 1);
 
@@ -61,6 +66,36 @@ namespace ElectroMaster.Core.Controller
 
 			return RedirectToCurrentUmbracoPage();
 		}
-		
-	}
+
+        [HttpPost]
+        public IActionResult RemoveFromCart(RemoveFromCartDto postModel)
+        {
+            var store = CurrentPage.AncestorOrSelf<Home>()?.Store;			
+            try
+            {
+                _commerceApi.Uow.Execute(uow =>
+                {
+                  
+                    var order = _commerceApi.GetOrCreateCurrentOrder(store.Id)
+                        .AsWritable(uow)
+                        .RemoveOrderLine(postModel.OrderLineId);
+
+                    _commerceApi.SaveOrder(order);
+
+                    uow.Complete();
+                });
+            }
+            catch (ValidationException ex)
+            {
+                ModelState.AddModelError("productReference", "Failed to remove cart item");
+
+                return CurrentUmbracoPage();
+            }
+
+            return RedirectToCurrentUmbracoPage();
+        }
+
+    }
+
+
 }
