@@ -1,0 +1,101 @@
+﻿@using ElectroMaster.Core.Models.System.Checkout
+@using Umbraco.Cms.Web.Common.PublishedModels;
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
+
+@{
+    Layout = "Master.cshtml";
+}
+
+@using (Html.BeginUmbracoForm("UpdateOrderInformation", "CheckoutSurface"))
+{
+    <input type="hidden" name="nextStep" value="" />
+
+    <!-- Contact Information -->
+    <h3>Contact Information</h3>
+    <label for="email">Email:</label>
+    <input name="email" type="email" value="" required />
+    <br />
+
+    <label>
+        <input name="marketingOptIn" type="checkbox" /> Keep me up to date on news and exclusive offers
+    </label>
+    <br />
+
+    <!-- Billing Address -->
+    <h3>Billing Address</h3>
+    <label for="billingAddress.FirstName">First Name:</label>
+    <input name="billingAddress.FirstName" type="text" value="" required />
+    <br />
+
+    <label for="billingAddress.LastName">Last Name:</label>
+    <input name="billingAddress.LastName" type="text" value="" required />
+    <br />
+
+    <label for="billingAddress.Line1">Address Line 1:</label>
+    <input name="billingAddress.Line1" type="text" value="" required />
+    <br />
+
+    <label for="billingAddress.Line2">Address Line 2:</label>
+    <input name="billingAddress.Line2" type="text" value="" />
+    <br />
+
+    <label for="billingAddress.City">City:</label>
+    <input name="billingAddress.City" type="text" value="" required />
+    <br />
+
+    <label for="billingAddress.ZipCode">Zip Code:</label>
+    <input name="billingAddress.ZipCode" type="text" value="" required />
+    <br />
+
+    <label for="billingAddress.Telephone">Telephone:</label>
+    <input name="billingAddress.Telephone" type="text" value="" />
+    <br />
+
+    <label for="billingAddress.Country" style="display:none;">Billing Country:</label>
+    <input name="billingAddress.Country" type="text" value="5ec6dc87-7b28-4abf-b0c0-018cd87f4a68" style="display:none;" />
+    <br />
+
+    <!-- Shipping Address -->
+    <h3>Shipping Address</h3>
+    <label>
+        <input name="shippingSameAsBilling" type="checkbox" /> Shipping address is same as billing address?
+    </label>
+    <br />
+
+    <div id="shipping-address">
+        <label for="shippingAddress.FirstName">First Name:</label>
+        <input name="shippingAddress.FirstName" type="text" value="" /><br />
+
+        <label for="shippingAddress.LastName">Last Name:</label>
+        <input name="shippingAddress.LastName" type="text" value="" /><br />
+
+        <label for="shippingAddress.Line1">Address Line 1:</label>
+        <input name="shippingAddress.Line1" type="text" value="" /><br />
+
+        <label for="shippingAddress.Line2">Address Line 2:</label>
+        <input name="shippingAddress.Line2" type="text" value="" /><br />
+
+        <label for="shippingAddress.City">City:</label>
+        <input name="shippingAddress.City" type="text" value="" /><br />
+
+        <label for="shippingAddress.ZipCode">Zip Code:</label>
+        <input name="shippingAddress.ZipCode" type="text" value="" /><br />
+
+        <label for="shippingAddress.Telephone">Telephone:</label>
+        <input name="shippingAddress.Telephone" type="text" value="" /><br />
+
+        <label for="shippingAddress.Country" style="display:none;">Shipping Country:</label>
+        <input name="shippingAddress.Country" type="text" value="5ec6dc87-7b28-4abf-b0c0-018cd87f4a68" style="display:none;" />
+        <br />
+    </div>
+
+    <!-- Comments -->
+    <h3>Comments</h3>
+    <textarea name="comments"></textarea>
+    <br />
+
+    <button type="submit">Update Information</button>
+}
+
+
+
