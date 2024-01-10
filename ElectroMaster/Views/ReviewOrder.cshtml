@@ -1,0 +1,84 @@
+﻿@using Polly
+@using Umbraco.Cms.Web.Common.PublishedModels;
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.ReviewOrder>
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
+@using Umbraco.Commerce.Core.Api
+@using Umbraco.Commerce.Core.Models
+@using Umbraco.Commerce.Extensions
+@{
+    Layout = "Master.cshtml";
+
+    var store = Model.Value<StoreReadOnly>("store", fallback: Fallback.ToAncestors);
+    var Order = CommerceApi.Instance.GetCurrentOrder(store.Id);
+
+}
+
+@{
+    // Placeholder URL
+    string continueUrl = "https://localhost:44327/review-order/";
+}
+
+
+
+@if (Order != null)
+{
+    <div class="section">
+        <div class="container">
+            <div class="col-12 order-details">
+                <div class="section-title text-center">
+                    <h3 class="text-xl font-medium mb-4 mt-8">Payment Method</h3>
+
+                    <!-- Contact Information -->
+                    <p>Email: @Order.CustomerInfo.Email</p>
+
+                    <!-- Billing Information -->
+                    <div>
+                        <h4>Billing Information:</h4>
+                        <p>
+                            @{
+                                var country = CommerceApi.Instance.GetCountry(Order.PaymentInfo.CountryId.Value);
+                            }
+                            Name: @Order.CustomerInfo.FirstName @Order.CustomerInfo.LastName <br />
+                            Address: @Html.Raw(string.Join(", ", new string[] {
+                        Order.Properties["billingAddressLine1"],
+                        Order.Properties["billingAddressLine2"],
+                        Order.Properties["billingCity"],
+                        country.Name,
+                        Order.Properties["billingZipCode"]
+                                        }.Where(x => !x.IsNullOrWhiteSpace()).Select(x => Html.Encode(x))))
+                        </p>
+                    </div>
+
+                    <!-- Shipping Information -->
+                    <div>
+                        <h4>Shipping Information:</h4>
+                        <p>
+                            Name: @Order.Properties["shippingFirstName"] @Order.Properties["shippingLastName"] <br />
+                            Address: @Html.Raw(string.Join(", ", new string[] {
+                        Order.Properties["shippingAddressLine1"],
+                        Order.Properties["shippingAddressLine2"],
+                        Order.Properties["shippingCity"],
+                        country.Name,
+                        Order.Properties["shippingZipCode"]
+                                        }.Where(x => !x.IsNullOrWhiteSpace()).Select(x => Html.Encode(x))))
+                        </p>
+                    </div>
+
+                    <!-- Your payment method content can be added here -->
+                    <!-- For example, you can add payment method options or information -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @using (await Html.BeginPaymentFormAsync(Order))
+    {
+        var paymentForm = await Html.BeginPaymentFormAsync(Order);
+        <button type="submit">Continue to Payment</button>
+    }
+
+}
+else
+{
+    <h4>You have no order in cart</h4>
+}

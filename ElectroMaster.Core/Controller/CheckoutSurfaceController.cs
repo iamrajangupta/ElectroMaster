@@ -14,6 +14,7 @@ using Umbraco.Commerce.Common.Validation;
 using Umbraco.Commerce.Core;
 using Umbraco.Commerce.Extensions;
 using Umbraco.Commerce.Checkout.Web;
+using ElectroMaster.Core.Service;
 
 
 namespace ElectroMaster.Core.Controller
@@ -30,13 +31,13 @@ namespace ElectroMaster.Core.Controller
             _commerceApi = commerceApi;
         }
 
-       
+
 
         public IActionResult UpdateOrderInformation(UpdateOrderInformationDto model)
         {
             try
             {
-                  var store = CurrentPage.AncestorOrSelf<Home>()?.Store;
+                var store = CurrentPage.AncestorOrSelf<Home>()?.Store;
                 _commerceApi.Uow.Execute(uow =>
                 {
                     var order = _commerceApi.GetOrCreateCurrentOrder(store.Id)
@@ -72,15 +73,16 @@ namespace ElectroMaster.Core.Controller
 
                     uow.Complete();
                 });
+                string returnUrl = "/shipping-method/";
+                return Redirect(returnUrl);
             }
             catch (System.ComponentModel.DataAnnotations.ValidationException ex)
             {
                 ModelState.AddModelError("", "Failed to update information");
 
                 return CurrentUmbracoPage();
-            }  
-            
-            return RedirectToCurrentUmbracoPage();
+            }
+
         }
 
         [HttpPost]
@@ -99,6 +101,8 @@ namespace ElectroMaster.Core.Controller
 
                     uow.Complete();
                 });
+                string returnUrl = "/payment-method/";
+                return Redirect(returnUrl);
             }
             catch (System.ComponentModel.DataAnnotations.ValidationException ex)
             {
@@ -106,7 +110,6 @@ namespace ElectroMaster.Core.Controller
 
                 return CurrentUmbracoPage();
             }
-            return RedirectToCurrentUmbracoPage();
         }
 
 
@@ -126,14 +129,18 @@ namespace ElectroMaster.Core.Controller
 
                     uow.Complete();
                 });
+                string returnUrl = "/review-order/";
+                return Redirect(returnUrl);
             }
             catch (System.ComponentModel.DataAnnotations.ValidationException ex)
             {
                 ModelState.AddModelError("", "Failed to set order payment method");
 
                 return CurrentUmbracoPage();
-            }          
-            return RedirectToCurrentUmbracoPage();
+            }
+
         }
+
+       
     }
 }
