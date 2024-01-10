@@ -17,21 +17,27 @@
            : null;
 }
 
-<h3 class="text-xl font-medium mb-4">Shipping Method</h3>
-@using (Html.BeginUmbracoForm("UpdateOrderShippingMethod", "CheckoutSurface"))
-{
-    <ul class="border border-gray-300 rounded">
-        @foreach (var item in ShippingMethods.Select((sm, i) => new { ShippingMethod = sm, Index = i }))
-        {
-            <li class="border-gray-300 @(item.Index > 0 ? "border-t " : "")">
-                <label class="flex items-center py-4 px-4 cursor-pointer hover:bg-gray-100">
-                    <input name="shippingMethod" type="radio" value="@item.ShippingMethod.Id" class="mr-3" @((Order.ShippingInfo.ShippingMethodId.HasValue && Order.ShippingInfo.ShippingMethodId.Value == item.ShippingMethod.Id) || (!Order.ShippingInfo.ShippingMethodId.HasValue && ShippingCountry != null && ShippingCountry.DefaultShippingMethodId == item.ShippingMethod.Id) ? "checked=\"checked\"" : "") required />
-                    <span class="font-medium">@item.ShippingMethod.Name</span>                 
-                </label>
-            </li>
-        }
-    </ul>
-
-    <button type="submit">Update ShippingMethod</button>
-
-}
+<div class="section">
+    <div class="container">
+        <div class="col-12 order-details">
+            <div class="section-title text-center">
+                <h3 class="title">Shipping Method</h3>
+                @using (Html.BeginUmbracoForm("UpdateOrderShippingMethod", "CheckoutSurface"))
+                {
+                    <ul class="border border-gray-300 rounded ship-meth">
+                        @foreach (var item in ShippingMethods.Select((sm, i) => new { ShippingMethod = sm, Index = i }))
+                        {
+                            <li>
+                                <label>
+                                    <input name="shippingMethod" type="radio" value="@item.ShippingMethod.Id" @((Order.ShippingInfo.ShippingMethodId.HasValue && Order.ShippingInfo.ShippingMethodId.Value == item.ShippingMethod.Id) || (!Order.ShippingInfo.ShippingMethodId.HasValue && ShippingCountry != null && ShippingCountry.DefaultShippingMethodId == item.ShippingMethod.Id) ? "checked=\"checked\"" : "") required />
+                                    <span class="font-medium">@item.ShippingMethod.Name</span>
+                                </label>
+                            </li>
+                        }
+                    </ul>
+                    <button class="primary-btn" type="submit">Update Shipping Method</button>
+                }
+            </div>
+        </div>
+    </div>
+</div>

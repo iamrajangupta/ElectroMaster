@@ -2238,49 +2238,8 @@ textarea.input {
 /* CSS classes based on HTML structure */
 /* Prefix for class names: 'infor' */
 
-/* Form container styles */
-.infor-information-form {
-    width: 80%;
-    margin: 0 auto;
-    font-family: Arial, sans-serif;
-    padding: 20px;
-    border-radius: 5px;
-    background-color: white;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    color: red;
+
+
+.ship-meth {
+    margin: 80px;
 }
-
-/* Red and white theme */
-.infor-information-form {
-    background-color: white;
-    color: red;
-}
-
-    /* Styles for each section */
-    /* ... */
-
-    /* Billing and Shipping Address layout */
-    .infor-information-form .infor-addresses {
-        margin-bottom: 20px;
-    }
-
-    .infor-information-form .infor-address-row {
-        display: flex;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        margin-bottom: 20px;
-    }
-
-    .infor-information-form .infor-address-column {
-        width: calc(50% - 10px);
-        box-sizing: border-box;
-    }
-
-    /* Specific styles for Billing Address and Shipping Address columns */
-    .infor-information-form .infor-address-column {
-        background-color: white;
-        padding: 15px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-    }
