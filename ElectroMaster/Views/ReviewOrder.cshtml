@@ -1,5 +1,4 @@
-﻿@using Polly
-@using Umbraco.Cms.Web.Common.PublishedModels;
+﻿@using Umbraco.Cms.Web.Common.PublishedModels;
 @inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.ReviewOrder>
 @using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
 @using Umbraco.Commerce.Core.Api
@@ -13,69 +12,88 @@
 
 }
 
-@{
-    // Placeholder URL
-    string continueUrl = "https://localhost:44327/review-order/";
-}
-
-
-
 @if (Order != null)
 {
     <div class="section">
         <div class="container">
             <div class="col-12 order-details">
                 <div class="section-title text-center">
-                    <h3 class="text-xl font-medium mb-4 mt-8">Payment Method</h3>
+                    <h3 class="text-xl font-medium mb-4 mt-8">Contact Information</h3>
 
                     <!-- Contact Information -->
-                    <p>Email: @Order.CustomerInfo.Email</p>
+                    <p>
+                        <strong>Email :</strong> @Order.CustomerInfo.Email
+                    </p>
 
-                    <!-- Billing Information -->
-                    <div>
-                        <h4>Billing Information:</h4>
-                        <p>
-                            @{
-                                var country = CommerceApi.Instance.GetCountry(Order.PaymentInfo.CountryId.Value);
-                            }
-                            Name: @Order.CustomerInfo.FirstName @Order.CustomerInfo.LastName <br />
-                            Address: @Html.Raw(string.Join(", ", new string[] {
-                        Order.Properties["billingAddressLine1"],
-                        Order.Properties["billingAddressLine2"],
-                        Order.Properties["billingCity"],
-                        country.Name,
-                        Order.Properties["billingZipCode"]
-                                        }.Where(x => !x.IsNullOrWhiteSpace()).Select(x => Html.Encode(x))))
-                        </p>
+                    <div class="row">
+                        <!-- Billing Information -->
+                        <div class="col-md-6">
+                            <div class="info-table">
+                                <h4 class="centered-heading">Billing Information</h4>
+                                <table>
+                                    <tr>
+                                        <td><strong>Name :</strong></td>
+                                        <td>@Order.CustomerInfo.FirstName @Order.CustomerInfo.LastName</td>
+                                    </tr>
+                                    <tr>
+                                       
+                                        <td><strong>Address :</strong></td>
+                                        <td>
+                                            @{
+                                                var country = CommerceApi.Instance.GetCountry(Order.PaymentInfo.CountryId.Value);
+                                            }
+                                            <div>
+                                                @Html.Raw(string.Join("<br>", new string[] {
+                                            Order.Properties["billingAddressLine1"],
+                                            Order.Properties["billingAddressLine2"],
+                                            Order.Properties["billingCity"],
+                                            country.Name,
+                                            Order.Properties["billingZipCode"]
+                                                                                }.Where(x => !x.IsNullOrWhiteSpace()).Select(x => Html.Encode(x))))
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Shipping Information -->
+                        <div class="col-md-6">
+                            <div class="info-table">
+                                <h4 class="centered-heading">Shipping Information</h4>
+                                <table>
+                                    <tr>
+                                        <td><strong>Name :</strong></td>
+                                        <td>@Order.Properties["shippingFirstName"] @Order.Properties["shippingLastName"]</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Address :</strong></td>
+                                        <td>
+                                            <div>
+                                                @Html.Raw(string.Join("<br>", new string[] {
+                                            Order.Properties["shippingAddressLine1"],
+                                            Order.Properties["shippingAddressLine2"],
+                                            Order.Properties["shippingCity"],
+                                            country.Name,
+                                            Order.Properties["shippingZipCode"]
+                                                                                }.Where(x => !x.IsNullOrWhiteSpace()).Select(x => Html.Encode(x))))
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-
-                    <!-- Shipping Information -->
-                    <div>
-                        <h4>Shipping Information:</h4>
-                        <p>
-                            Name: @Order.Properties["shippingFirstName"] @Order.Properties["shippingLastName"] <br />
-                            Address: @Html.Raw(string.Join(", ", new string[] {
-                        Order.Properties["shippingAddressLine1"],
-                        Order.Properties["shippingAddressLine2"],
-                        Order.Properties["shippingCity"],
-                        country.Name,
-                        Order.Properties["shippingZipCode"]
-                                        }.Where(x => !x.IsNullOrWhiteSpace()).Select(x => Html.Encode(x))))
-                        </p>
+                    <div class="text-center">
+                        @using (await Html.BeginPaymentFormAsync(Order))
+                        {
+                            <button class="primary-btn" type="submit">Continue to Payment</button>
+                        }
                     </div>
-
-                    <!-- Your payment method content can be added here -->
-                    <!-- For example, you can add payment method options or information -->
                 </div>
             </div>
         </div>
     </div>
-
-    @using (await Html.BeginPaymentFormAsync(Order))
-    {
-        var paymentForm = await Html.BeginPaymentFormAsync(Order);
-        <button type="submit">Continue to Payment</button>
-    }
 
 }
 else

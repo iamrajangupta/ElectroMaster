@@ -15,6 +15,7 @@
     <PackageReference Include="Umbraco.Cms" Version="13.0.0" />
     <PackageReference Include="Umbraco.Commerce" Version="13.0.0" />
     <PackageReference Include="Umbraco.Commerce.Checkout" Version="13.0.0" />
+    <PackageReference Include="Umbraco.Commerce.PaymentProviders.Stripe" Version="13.0.0" />
     <PackageReference Include="uSync" Version="13.0.0" />
   </ItemGroup>
 

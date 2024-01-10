@@ -2243,3 +2243,81 @@ textarea.input {
 .ship-meth {
     margin: 80px;
 }
+/* Custom CSS */
+.info-table {
+    border: 1px solid #ccc;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+    .info-table table {
+        width: 100%;
+        text-align: left;
+    }
+
+        .info-table table td {
+            padding: 8px 0;
+        }
+
+    .info-table h4 {
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+/* Centered Heading */
+.centered-heading {
+    text-align: center;
+}
+
+/* Optional: Adjust the appearance of div elements inside the address */
+.info-table div {
+    margin-bottom: 5px;
+}
+
+/* CSS for Red Icon and Animation */
+.text-red-500 {
+    color: #ff0000; /* Red color code */
+}
+
+
+/* Updated CSS for Smooth Animation */
+/* Updated CSS for Larger Icon */
+.circle-icon {
+    font-size: 90px; /* Set the font size to increase the icon size */
+    margin-bottom: 30px;
+    color: #D10024;
+}
+
+
+.text-red-500 {
+    color: #ff0000; /* Red color code */
+}
+
+/* Define smooth pulsating animation */
+@keyframes increaseSize {
+    0% {
+        transform: scale(1); /* Initial scale */
+    }
+
+    50% {
+        transform: scale(1.2); /* Scale up to 20% larger */
+    }
+
+    100% {
+        transform: scale(1); /* Return to the original scale */
+    }
+}
+
+.animated-icon {
+    animation: increaseSize 3s infinite ease-in-out; /* Smooth pulsating animation */
+}
+
+.order-cnf {
+    padding-top: 120px;
+    padding-bottom: 120px;
+}
+
+.order-btn {
+    margin: 0px 0 70px;
+}
