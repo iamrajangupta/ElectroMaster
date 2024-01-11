@@ -2286,12 +2286,12 @@ textarea.input {
 .circle-icon {
     font-size: 90px; /* Set the font size to increase the icon size */
     margin-bottom: 30px;
-    color: #D10024;
+    color: #008000;
 }
 
 
-.text-red-500 {
-    color: #ff0000; /* Red color code */
+.text-greeen-500 {
+    color: #008000; /* Red color code */
 }
 
 /* Define smooth pulsating animation */

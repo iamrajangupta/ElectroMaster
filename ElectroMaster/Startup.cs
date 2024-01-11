@@ -1,3 +1,5 @@
+using Umbraco.Commerce.Extensions;
+
 namespace ElectroMaster
 {
     public class Startup
@@ -32,6 +34,10 @@ namespace ElectroMaster
             services.AddUmbraco(_env, _config)
                 .AddBackOffice()
                 .AddWebsite()
+                .AddDeliveryApi()
+                .AddUmbracoCommerce(builder => {
+                     builder.AddStorefrontApi();
+                })
                 .AddComposers()
                 .Build();
         }

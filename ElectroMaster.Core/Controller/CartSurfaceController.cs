@@ -70,9 +70,10 @@ namespace ElectroMaster.Core.Controller
         [HttpPost]
         public IActionResult RemoveFromCart(RemoveFromCartDto postModel)
         {
-            var store = CurrentPage.AncestorOrSelf<Home>()?.Store;			
+           			
             try
             {
+			    var store = CurrentPage.AncestorOrSelf<Home>()?.Store;			
                 _commerceApi.Uow.Execute(uow =>
                 {
                   

@@ -14,6 +14,7 @@
     Layout = "Master.cshtml";
     var store = Model.Value<StoreReadOnly>("store", fallback: Fallback.ToAncestors);
     var Order = CommerceApi.Instance.GetCurrentOrder(store.Id);
+    var myOrder = CommerceApi.Instance.GetAllOrdersForCustomer(store.Id, "jbladministrator@kayodigital.com");
 }
 
 <div class="section">
