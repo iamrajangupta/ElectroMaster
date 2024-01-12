@@ -1,3 +1,5 @@
+using ElectroMaster.Core.Controller;
+using ElectroMaster.Core.Controller.API;
 using Umbraco.Commerce.Extensions;
 
 namespace ElectroMaster
@@ -31,6 +33,9 @@ namespace ElectroMaster
         /// </remarks>
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddScoped<ProductsController>();
+            services.AddScoped<CartController>();
+            services.AddControllers();
             services.AddUmbraco(_env, _config)
                 .AddBackOffice()
                 .AddWebsite()
