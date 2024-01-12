@@ -35,8 +35,9 @@ namespace ElectroMaster
                 .AddBackOffice()
                 .AddWebsite()
                 .AddDeliveryApi()
-                .AddUmbracoCommerce(builder => {
-                     builder.AddStorefrontApi();
+                .AddUmbracoCommerce(builder =>
+                {
+                    builder.AddStorefrontApi();
                 })
                 .AddComposers()
                 .Build();

@@ -10,6 +10,7 @@ using Umbraco.Cms.Web.Common.PublishedModels;
 using Umbraco.Cms.Web.Website.Controllers;
 using Umbraco.Commerce.Core.Api;
 using Umbraco.Commerce.Core;
+using ElectroMaster.Core.Extensions;
 
 
 namespace ElectroMaster.Core.Controller
@@ -32,7 +33,7 @@ namespace ElectroMaster.Core.Controller
         {
             try
             {
-                var store = CurrentPage.AncestorOrSelf<Home>()?.Store;
+                var store = CurrentPage.GetStore();
                 _commerceApi.Uow.Execute(uow =>
                 {
                     var order = _commerceApi.GetOrCreateCurrentOrder(store.Id)
@@ -85,7 +86,7 @@ namespace ElectroMaster.Core.Controller
         {
             try
             {
-                var store = CurrentPage.AncestorOrSelf<Home>()?.Store;
+                var store = CurrentPage.GetStore();
                 _commerceApi.Uow.Execute(uow =>
                 {
                     var order = _commerceApi.GetOrCreateCurrentOrder(store.Id)
@@ -114,8 +115,7 @@ namespace ElectroMaster.Core.Controller
             {
                 _commerceApi.Uow.Execute(uow =>
                 {
-                    var store = CurrentPage.AncestorOrSelf<Home>()?.Store;
-
+                    var store = CurrentPage.GetStore();
                     var order = _commerceApi.GetOrCreateCurrentOrder(store.Id)
                         .AsWritable(uow)
                         .SetPaymentMethod(model.PaymentMethod);
@@ -135,7 +135,6 @@ namespace ElectroMaster.Core.Controller
             }
 
         }
-
        
     }
 }
