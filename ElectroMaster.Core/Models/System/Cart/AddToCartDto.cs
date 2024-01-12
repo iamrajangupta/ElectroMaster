@@ -9,7 +9,7 @@ namespace ElectroMaster.Core.Models.System.Cart
     public class AddToCartDto
     {
         public string ProductReference { get; set; }
-        public string ProductVariantReference { get; set; }
+        public string? ProductVariantReference { get; set; } = null;
         public string ProductName { get; set; }
         public int ProductCount { get; set; }
 

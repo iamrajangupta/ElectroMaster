@@ -1,5 +1,6 @@
 ﻿using ElectroMaster.Core.Extensions;
 using ElectroMaster.Core.Models.System;
+using ElectroMaster.Core.Models.System.Cart;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using Umbraco.Cms.Core.Cache;
@@ -13,8 +14,10 @@ using Umbraco.Cms.Web.Website.Controllers;
 using Umbraco.Commerce.Core.Api;
 using Umbraco.Commerce.Extensions;
 
+
 namespace ElectroMaster.Core.Controller
 {
+
     public class CartSurfaceController : SurfaceController
     {
         private readonly IUmbracoCommerceApi _commerceApi;
@@ -40,7 +43,6 @@ namespace ElectroMaster.Core.Controller
                 _commerceApi.Uow.Execute(uow =>
                 {
 
-
                     var order = _commerceApi.GetOrCreateCurrentOrder(store.Id)
                         .AsWritable(uow)
                         .AddProduct(postModel.ProductReference, postModel.ProductVariantReference, postModel.ProductCount);
@@ -65,26 +67,26 @@ namespace ElectroMaster.Core.Controller
         public IActionResult RemoveFromCart(RemoveFromCartDto postModel)
         {
 
-            try
-            {
-                var storeId = new Guid("1f0f0ae0-dcba-4b1c-8584-018cd87f4959");
-                _commerceApi.Uow.Execute(uow =>
-                {
-                    var order = _commerceApi.GetOrCreateCurrentOrder(storeId)
-                        .AsWritable(uow)
-                        .RemoveOrderLine(postModel.OrderLineId);
+            //try
+            //{
+            //    var storeId = new Guid("1f0f0ae0-dcba-4b1c-8584-018cd87f4959");
+            //    _commerceApi.Uow.Execute(uow =>
+            //    {
+            //        var order = _commerceApi.GetOrCreateCurrentOrder(storeId)
+            //            .AsWritable(uow)
+            //            .RemoveOrderLine(postModel.OrderLineId);
 
-                    _commerceApi.SaveOrder(order);
+            //        _commerceApi.SaveOrder(order);
 
-                    uow.Complete();
-                });
-            }
-            catch (ValidationException ex)
-            {
-                ModelState.AddModelError("productReference", "Failed to remove cart item");
+            //        uow.Complete();
+            //    });
+            //}
+            //catch (ValidationException ex)
+            //{
+            //    ModelState.AddModelError("productReference", "Failed to remove cart item");
 
-                return CurrentUmbracoPage();
-            }
+            //    return CurrentUmbracoPage();
+            //}
 
             string returnUrl = "/cart";
             return Redirect(returnUrl);
