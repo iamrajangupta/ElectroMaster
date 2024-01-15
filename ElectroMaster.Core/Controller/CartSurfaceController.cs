@@ -67,26 +67,26 @@ namespace ElectroMaster.Core.Controller
         public IActionResult RemoveFromCart(RemoveFromCartDto postModel)
         {
 
-            //try
-            //{
-            //    var storeId = new Guid("1f0f0ae0-dcba-4b1c-8584-018cd87f4959");
-            //    _commerceApi.Uow.Execute(uow =>
-            //    {
-            //        var order = _commerceApi.GetOrCreateCurrentOrder(storeId)
-            //            .AsWritable(uow)
-            //            .RemoveOrderLine(postModel.OrderLineId);
+            try
+            {
+                var storeId = new Guid("1f0f0ae0-dcba-4b1c-8584-018cd87f4959");
+                _commerceApi.Uow.Execute(uow =>
+                {
+                    var order = _commerceApi.GetOrCreateCurrentOrder(storeId)
+                        .AsWritable(uow)
+                        .RemoveOrderLine(postModel.OrderLineId);
 
-            //        _commerceApi.SaveOrder(order);
+                    _commerceApi.SaveOrder(order);
 
-            //        uow.Complete();
-            //    });
-            //}
-            //catch (ValidationException ex)
-            //{
-            //    ModelState.AddModelError("productReference", "Failed to remove cart item");
+                    uow.Complete();
+                });
+            }
+            catch (ValidationException ex)
+            {
+                ModelState.AddModelError("productReference", "Failed to remove cart item");
 
-            //    return CurrentUmbracoPage();
-            //}
+                return CurrentUmbracoPage();
+            }
 
             string returnUrl = "/cart";
             return Redirect(returnUrl);

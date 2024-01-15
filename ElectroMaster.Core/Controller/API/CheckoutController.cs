@@ -1,48 +1,41 @@
-﻿using ElectroMaster.Core.Models.System.Checkout;
-using Microsoft.AspNetCore.Mvc;
-using Umbraco.Cms.Core.Cache;
-using Umbraco.Cms.Core.Logging;
-using Umbraco.Cms.Core.Routing;
+﻿using Microsoft.AspNetCore.Mvc;
 using Umbraco.Cms.Core.Services;
-using Umbraco.Cms.Core.Web;
-using Umbraco.Cms.Infrastructure.Persistence;
-using Umbraco.Cms.Web.Common.PublishedModels;
-using Umbraco.Cms.Web.Website.Controllers;
+using Umbraco.Cms.Web.Common.Controllers;
+using Umbraco.Cms.Web.Common;
 using Umbraco.Commerce.Core.Api;
+using ElectroMaster.Core.Models.System.Checkout;
 using Umbraco.Commerce.Core;
-using ElectroMaster.Core.Extensions;
+using Umbraco.Commerce.Core.Models;
 
 
-namespace ElectroMaster.Core.Controller
+namespace ElectroMaster.Core.Controller.API
 {
-    public class CheckoutSurfaceController : SurfaceController
+    [ApiController]
+    [Route("api/checkout")]
+    public class CheckoutController : UmbracoApiController
     {
         private readonly IUmbracoCommerceApi _commerceApi;
-
-        public CheckoutSurfaceController(IUmbracoContextAccessor umbracoContextAccessor, IUmbracoDatabaseFactory databaseFactory,
-            ServiceContext services, AppCaches appCaches, IProfilingLogger profilingLogger, IPublishedUrlProvider publishedUrlProvider,
-            IUmbracoCommerceApi commerceApi)
-            : base(umbracoContextAccessor, databaseFactory, services, appCaches, profilingLogger, publishedUrlProvider)
+        private readonly Guid _storeId = new Guid("1f0f0ae0-dcba-4b1c-8584-018cd87f4959");
+        public CheckoutController(UmbracoHelper umbracoHelper, ServiceContext services, IUmbracoCommerceApi commerceApi)
         {
             _commerceApi = commerceApi;
         }
 
 
-
+        [HttpPost("updateinfromation")]
         public IActionResult UpdateOrderInformation(UpdateOrderInformationDto model)
         {
             try
             {
-                var store = CurrentPage.GetStore();
+
                 _commerceApi.Uow.Execute(uow =>
                 {
-                    var order = _commerceApi.GetOrCreateCurrentOrder(store.Id)
+                    var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
                         .AsWritable(uow)
                         .SetProperties(new Dictionary<string, string>
                         {
                             { Constants.Properties.Customer.EmailPropertyAlias, model.Email },
                             { "marketingOptIn", model.MarketingOptIn ? "1" : "0" },
-
                             { Constants.Properties.Customer.FirstNamePropertyAlias, model.BillingAddress.FirstName },
                             { Constants.Properties.Customer.LastNamePropertyAlias, model.BillingAddress.LastName },
                             { "billingAddressLine1", model.BillingAddress.Line1 },
@@ -69,27 +62,46 @@ namespace ElectroMaster.Core.Controller
 
                     uow.Complete();
                 });
-                string returnUrl = "/shipping-method/";
-                return Redirect(returnUrl);
+
             }
             catch (System.ComponentModel.DataAnnotations.ValidationException ex)
             {
-                ModelState.AddModelError("", "Failed to update information");
+                return BadRequest(ex.Message);
+            }
+            return Ok();
+        }
 
-                return CurrentUmbracoPage();
+        [HttpGet("shippingmethods")]
+        public IActionResult GetShippingMethods()
+        {
+            try
+            {
+                var shippingMethods = _commerceApi.GetShippingMethods(_storeId);
+
+                if (shippingMethods != null && shippingMethods.Any())
+                {
+                    return Ok(shippingMethods);
+                }
+                else
+                {
+                    return NotFound("No shipping methods found for the specified store.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
 
         }
 
-        [HttpPost]
+        [HttpPost("shippingmethods")]
         public IActionResult UpdateOrderShippingMethod(UpdateOrderShippingMethodDto model)
         {
             try
             {
-                var store = CurrentPage.GetStore();
                 _commerceApi.Uow.Execute(uow =>
                 {
-                    var order = _commerceApi.GetOrCreateCurrentOrder(store.Id)
+                    var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
                         .AsWritable(uow)
                         .SetShippingMethod(model.ShippingMethod);
 
@@ -97,44 +109,68 @@ namespace ElectroMaster.Core.Controller
 
                     uow.Complete();
                 });
-                string returnUrl = "/payment-method/";
-                return Redirect(returnUrl);
+
             }
             catch (System.ComponentModel.DataAnnotations.ValidationException ex)
             {
-                ModelState.AddModelError("", "Failed to set order shipping method");
+                return BadRequest(ex.Message);
+            }
 
-                return CurrentUmbracoPage();
+            return Ok();
+        }
+
+
+        [HttpGet("paymentmethods")]
+        public IActionResult GetPaymentMethods()
+        {
+            try
+            {
+                
+                var paymentMethods = _commerceApi.GetPaymentMethods(_storeId);
+
+                if (paymentMethods != null && paymentMethods.Any())
+                {
+                    return Ok(paymentMethods);
+                }
+                else
+                {
+                    return NotFound("No payment methods found for the specified store.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
 
+        [HttpPost("paymentmethods")]
 
         public IActionResult UpdateOrderPaymentMethod(UpdateOrderPaymentMethodDto model)
         {
             try
             {
+                Order updatedOrder = null;
+
                 _commerceApi.Uow.Execute(uow =>
                 {
-                    var store = CurrentPage.GetStore();
-                    var order = _commerceApi.GetOrCreateCurrentOrder(store.Id)
+                    var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
                         .AsWritable(uow)
                         .SetPaymentMethod(model.PaymentMethod);
 
                     _commerceApi.SaveOrder(order);
 
+                    updatedOrder = order;
+
                     uow.Complete();
                 });
-                string returnUrl = "/review-order/";
-                return Redirect(returnUrl);
+
+                return Ok(updatedOrder); 
             }
             catch (System.ComponentModel.DataAnnotations.ValidationException ex)
             {
-                ModelState.AddModelError("", "Failed to set order payment method");
-
-                return CurrentUmbracoPage();
+                return BadRequest(ex.Message);
             }
-
         }
-       
+
     }
 }

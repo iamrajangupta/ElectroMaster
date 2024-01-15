@@ -5,12 +5,13 @@ using Umbraco.Cms.Web.Common.Controllers;
 using Umbraco.Cms.Web.Common;
 using Umbraco.Cms.Web.Common.PublishedModels;
 using Umbraco.Cms.Core.Models;
+
 using Umbraco.Commerce.Core.Api;
 
 namespace ElectroMaster.Core.Controller.API
 {
     [ApiController]
-    [Route("api/products")]
+    [Route("api/product")]
     public class ProductsController : UmbracoApiController
     {
         private readonly UmbracoHelper _umbracoHelper;
@@ -50,13 +51,13 @@ namespace ElectroMaster.Core.Controller.API
 
         public IActionResult GetProductById(int id)
         {
-            IEnumerable<IPublishedContent> productItems = _umbracoHelper.ContentAtRoot()
+            IEnumerable<IPublishedContent> productItem = _umbracoHelper.ContentAtRoot()
                 .DescendantsOrSelf<Product>().Where(x => x.IsVisible() && x.Id == id)
                 .OrderByDescending(a => a.CreateDate)
                 .ToList();
 
 
-            var json = productItems.Select(prodItem => new
+            var json = productItem.Select(prodItem => new
             {
                 ProductId = prodItem.Id,
                 Title = prodItem.Value<string>("productName"),
@@ -70,14 +71,14 @@ namespace ElectroMaster.Core.Controller.API
         }
 
         [HttpDelete]
-        public string DeleteDemo(int id)
+        public string DeleteProduct(int id)
         {
-            IEnumerable<IPublishedContent> productItems = _umbracoHelper.ContentAtRoot()
+            IEnumerable<IPublishedContent> productItem = _umbracoHelper.ContentAtRoot()
             .DescendantsOrSelf<Product>().Where(x => x.IsVisible() && x.Id == id)
             .OrderByDescending(a => a.CreateDate)
             .ToList();
 
-            if (productItems.Any())
+            if (productItem.Any())
             {
                 var contentService = _services.ContentService;
                 var content = contentService.GetById(id);

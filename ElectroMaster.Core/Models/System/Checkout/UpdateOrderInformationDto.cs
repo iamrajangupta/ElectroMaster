@@ -19,8 +19,7 @@ namespace ElectroMaster.Core.Models.System.Checkout
         public bool ShippingSameAsBilling { get; set; }
 
         public string Comments { get; set; }
-
-        public Guid? NextStep { get; set; }
+      
     }
 
 }
