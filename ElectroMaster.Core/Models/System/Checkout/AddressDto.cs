@@ -21,7 +21,7 @@ namespace ElectroMaster.Core.Models.System.Checkout
         public string City { get; set; }
 
         public Guid Country { get; set; }
-        public string Telephone { get; set; }
+        public int Telephone { get; set; }
     }
 
 }

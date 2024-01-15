@@ -9,6 +9,6 @@ namespace ElectroMaster.Core.Models.System.Checkout
     public class UpdateOrderShippingMethodDto
     {
         public Guid ShippingMethod { get; set; }
-        public Guid? NextStep { get; set; }
+      
     }
 }
