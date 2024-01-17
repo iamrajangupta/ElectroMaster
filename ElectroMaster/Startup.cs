@@ -1,4 +1,5 @@
 using Microsoft.OpenApi.Models;
+using Stripe.BillingPortal;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using Umbraco.Commerce.Extensions;
 
@@ -17,20 +18,7 @@ namespace ElectroMaster
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
-
-            // Configure Swagger for ElectroMaster API
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "ElectroMaster API", Version = "v1" });
-            });
-
-            // Configure Swagger for Umbraco Commerce API
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("storefront", new OpenApiInfo { Title = "Storefront API", Version = "v1" });
-            });
-
+            services.AddControllers();          
             services.AddUmbraco(_env, _config)
                 .AddBackOffice()
                 .AddWebsite()
@@ -50,12 +38,13 @@ namespace ElectroMaster
                 app.UseDeveloperExceptionPage();
             }
 
+            string virDir = _config.GetSection("VirtualDirectory").Value;
+
+
             // Configure Swagger UI for ElectroMaster API
             app.UseSwagger();
             app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "ElectroMaster API");
-                c.SwaggerEndpoint("/umbraco/swagger/storefront/swagger.json", "Storefront API");
+            {                
                 c.SwaggerEndpoint("/umbraco/swagger/default/swagger.json", "Default API");
                 c.RoutePrefix = "swagger";
                 c.DocExpansion(DocExpansion.None);

@@ -39,6 +39,9 @@ namespace ElectroMaster.Core.Controller.API
                 Title = prodItem.Value<string>("productName"),
                 Date = prodItem.CreateDate.ToString("dd MMM yyyy"),
                 Guid = prodItem.Key,
+                Stock = prodItem.Value<int>("stock"),
+                ProductDetail = prodItem.Value<string>("productDetail"),
+               
                 ImageUrl = prodItem.Value<MediaWithCrops<Image>>("image").Url().ToString(),
                 Url = prodItem.Url()
             });
@@ -61,6 +64,8 @@ namespace ElectroMaster.Core.Controller.API
             {
                 ProductId = prodItem.Id,
                 Title = prodItem.Value<string>("productName"),
+                Stock = prodItem.Value<int>("stock"),
+                ProductDetail = prodItem.Value<string>("productDetail"),
                 Date = prodItem.CreateDate.ToString("dd MMM yyyy"),
                 Guid = prodItem.Key,
                 ImageUrl = prodItem.Value<MediaWithCrops<Image>>("image").Url().ToString(),
