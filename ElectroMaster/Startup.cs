@@ -1,5 +1,5 @@
-using ElectroMaster.Core.Controller;
-using ElectroMaster.Core.Controller.API;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerUI;
 using Umbraco.Commerce.Extensions;
 
 namespace ElectroMaster
@@ -9,55 +9,57 @@ namespace ElectroMaster
         private readonly IWebHostEnvironment _env;
         private readonly IConfiguration _config;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Startup" /> class.
-        /// </summary>
-        /// <param name="webHostEnvironment">The web hosting environment.</param>
-        /// <param name="config">The configuration.</param>
-        /// <remarks>
-        /// Only a few services are possible to be injected here https://github.com/dotnet/aspnetcore/issues/9337.
-        /// </remarks>
         public Startup(IWebHostEnvironment webHostEnvironment, IConfiguration config)
         {
             _env = webHostEnvironment ?? throw new ArgumentNullException(nameof(webHostEnvironment));
             _config = config ?? throw new ArgumentNullException(nameof(config));
         }
 
-        /// <summary>
-        /// Configures the services.
-        /// </summary>
-        /// <param name="services">The services.</param>
-        /// <remarks>
-        /// This method gets called by the runtime. Use this method to add services to the container.
-        /// For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940.
-        /// </remarks>
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddScoped<ProductsController>();
-            services.AddScoped<CartController>();
             services.AddControllers();
+
+            // Configure Swagger for ElectroMaster API
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "ElectroMaster API", Version = "v1" });
+            });
+
+            // Configure Swagger for Umbraco Commerce API
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("storefront", new OpenApiInfo { Title = "Storefront API", Version = "v1" });
+            });
+
             services.AddUmbraco(_env, _config)
                 .AddBackOffice()
                 .AddWebsite()
                 .AddDeliveryApi()
-                .AddUmbracoCommerce(builder => {
+                .AddUmbracoCommerce(builder =>
+                {
                     builder.AddStorefrontApi();
                 })
                 .AddComposers()
                 .Build();
         }
 
-        /// <summary>
-        /// Configures the application.
-        /// </summary>
-        /// <param name="app">The application builder.</param>
-        /// <param name="env">The web hosting environment.</param>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            // Configure Swagger UI for ElectroMaster API
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "ElectroMaster API");
+                c.SwaggerEndpoint("/umbraco/swagger/storefront/swagger.json", "Storefront API");
+                c.SwaggerEndpoint("/umbraco/swagger/default/swagger.json", "Default API");
+                c.RoutePrefix = "swagger";
+                c.DocExpansion(DocExpansion.None);
+            });
 
             app.UseUmbraco()
                 .WithMiddleware(u =>
