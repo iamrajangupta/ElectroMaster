@@ -21,6 +21,7 @@ namespace ElectroMaster.Core.Controller.API
             _commerceApi = commerceApi;
         }
 
+        Order updatedOrder = null;
 
         [HttpPost("updateinfromation")]
         public IActionResult UpdateOrderInformation(UpdateOrderInformationDto model)
@@ -106,7 +107,7 @@ namespace ElectroMaster.Core.Controller.API
                         .SetShippingMethod(model.ShippingMethod);
 
                     _commerceApi.SaveOrder(order);
-
+                    updatedOrder = order;
                     uow.Complete();
                 });
 
@@ -116,7 +117,7 @@ namespace ElectroMaster.Core.Controller.API
                 return BadRequest(ex.Message);
             }
 
-            return Ok();
+            return Ok(updatedOrder);
         }
 
 
@@ -148,9 +149,7 @@ namespace ElectroMaster.Core.Controller.API
         public IActionResult UpdateOrderPaymentMethod(UpdateOrderPaymentMethodDto model)
         {
             try
-            {
-                Order updatedOrder = null;
-
+            {               
                 _commerceApi.Uow.Execute(uow =>
                 {
                     var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
@@ -171,6 +170,7 @@ namespace ElectroMaster.Core.Controller.API
                 return BadRequest(ex.Message);
             }
         }
+
 
     }
 }
