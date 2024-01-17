@@ -88,5 +88,12 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
 		[ImplementPropertyType("sKU")]
 		public virtual string SKU => this.Value<string>(_publishedValueFallback, "sKU");
+
+		///<summary>
+		/// Stock
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "13.0.0+9dfb300")]
+		[ImplementPropertyType("stock")]
+		public virtual global::System.Nullable<decimal> Stock => this.Value<global::System.Nullable<decimal>>(_publishedValueFallback, "stock");
 	}
 }
