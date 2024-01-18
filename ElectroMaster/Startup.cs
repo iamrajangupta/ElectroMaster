@@ -1,3 +1,10 @@
+using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using Umbraco.Commerce.Extensions;
 
@@ -50,13 +57,14 @@ namespace ElectroMaster
                 app.UseDeveloperExceptionPage();
             }
 
-            string virDir = _config.GetSection("VirtualDirectory").Value;
+            // Enable CORS globally
+            app.UseCors("MyPolicy");
 
             // Configure Swagger UI for ElectroMaster API
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/umbraco/swagger/default/swagger.json", "Default API");
+                c.SwaggerEndpoint("/swagger/default/swagger.json", "Default API");
                 c.RoutePrefix = "swagger";
                 c.DocExpansion(DocExpansion.None);
             });
@@ -75,8 +83,7 @@ namespace ElectroMaster
                     u.UseWebsiteEndpoints();
                 });
 
-            // Enable CORS globally
-            app.UseCors("MyPolicy");
+            // Other middleware or configurations as needed
         }
     }
 }
