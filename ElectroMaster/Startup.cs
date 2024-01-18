@@ -1,5 +1,3 @@
-using Microsoft.OpenApi.Models;
-using Stripe.BillingPortal;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using Umbraco.Commerce.Extensions;
 
@@ -18,7 +16,21 @@ namespace ElectroMaster
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();          
+            // Configure CORS
+            services.AddCors(options =>
+            {
+                options.AddPolicy("MyPolicy", builder =>
+                {
+                    builder.AllowAnyOrigin()
+                           .AllowAnyMethod()
+                           .AllowAnyHeader();
+                });
+            });
+
+            // Add MVC
+            services.AddControllers();
+
+            // Add Umbraco services
             services.AddUmbraco(_env, _config)
                 .AddBackOffice()
                 .AddWebsite()
@@ -40,16 +52,16 @@ namespace ElectroMaster
 
             string virDir = _config.GetSection("VirtualDirectory").Value;
 
-
             // Configure Swagger UI for ElectroMaster API
             app.UseSwagger();
             app.UseSwaggerUI(c =>
-            {                
+            {
                 c.SwaggerEndpoint("/umbraco/swagger/default/swagger.json", "Default API");
                 c.RoutePrefix = "swagger";
                 c.DocExpansion(DocExpansion.None);
             });
 
+            // Use Umbraco middleware and configure endpoints
             app.UseUmbraco()
                 .WithMiddleware(u =>
                 {
@@ -62,6 +74,9 @@ namespace ElectroMaster
                     u.UseBackOfficeEndpoints();
                     u.UseWebsiteEndpoints();
                 });
+
+            // Enable CORS globally
+            app.UseCors("MyPolicy");
         }
     }
 }
