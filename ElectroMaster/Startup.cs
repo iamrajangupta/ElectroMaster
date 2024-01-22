@@ -1,11 +1,3 @@
-using System;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerUI;
 using Umbraco.Commerce.Extensions;
 
 namespace ElectroMaster
@@ -64,9 +56,14 @@ namespace ElectroMaster
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/default/swagger.json", "Default API");
-                c.RoutePrefix = "swagger";
-                c.DocExpansion(DocExpansion.None);
+                if (env.IsDevelopment())
+                {
+                    c.SwaggerEndpoint("/swagger/default/swagger.json", "Default API");
+                }
+                else
+                {
+                    c.SwaggerEndpoint("/swagger/default/swagger.json", "Default API");
+                }
             });
 
             // Use Umbraco middleware and configure endpoints

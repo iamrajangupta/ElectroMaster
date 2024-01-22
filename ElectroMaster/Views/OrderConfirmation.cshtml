@@ -8,6 +8,7 @@
 	Layout = "Master.cshtml";
     var store = Model.Value<StoreReadOnly>("store", fallback: Fallback.ToAncestors);
     var Order = CommerceApi.Instance.GetCurrentFinalizedOrder(store.Id);
+
 } 
 
 <div class="section order-cnf">

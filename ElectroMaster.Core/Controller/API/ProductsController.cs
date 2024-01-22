@@ -7,6 +7,7 @@ using Umbraco.Cms.Web.Common.PublishedModels;
 using Umbraco.Cms.Core.Models;
 
 using Umbraco.Commerce.Core.Api;
+using Umbraco.Commerce.Cms.Models;
 
 namespace ElectroMaster.Core.Controller.API
 {
@@ -24,6 +25,7 @@ namespace ElectroMaster.Core.Controller.API
             _services = services;
             _commerceApi = commerceApi;
         }
+      
 
         [HttpGet]
         public IActionResult GetProduct()
@@ -40,15 +42,24 @@ namespace ElectroMaster.Core.Controller.API
                 Date = prodItem.CreateDate.ToString("dd MMM yyyy"),
                 Guid = prodItem.Key,
                 Stock = prodItem.Value<int>("stock"),
-                ProductDetail = prodItem.Value<string>("productDetail"),
+
                
+                CategoryType = ExtractCategoryTypeValues(prodItem),
+
+                ProductDetail = prodItem.Value<string>("productDetail"),
+
+                // Extracting the Price value
+                Price = GetProductPrice(prodItem),
+
                 ImageUrl = prodItem.Value<MediaWithCrops<Image>>("image").Url().ToString(),
                 Url = prodItem.Url()
             });
 
             return new JsonResult(json);
-
         }
+
+       
+       
 
         [HttpGet("{id}")]
 
@@ -68,6 +79,7 @@ namespace ElectroMaster.Core.Controller.API
                 ProductDetail = prodItem.Value<string>("productDetail"),
                 Date = prodItem.CreateDate.ToString("dd MMM yyyy"),
                 Guid = prodItem.Key,
+                Price = GetProductPrice(prodItem),
                 ImageUrl = prodItem.Value<MediaWithCrops<Image>>("image").Url().ToString(),
                 Url = prodItem.Url()
             });
@@ -97,6 +109,20 @@ namespace ElectroMaster.Core.Controller.API
             return "Product Not Found";
 
 
+        }
+        private decimal? GetProductPrice(IPublishedContent productItem)
+        {
+            var pricePropertyValue = productItem.Value<PricePropertyValue>("price").ToList();
+            var price = pricePropertyValue[0].Value;
+            return price; 
+        }
+        private List<string> ExtractCategoryTypeValues(IPublishedContent prodItem)
+        {
+            
+            var extractedValues = prodItem.Value<IEnumerable<IPublishedContent>>("categoryType", fallback: Fallback.ToAncestors)?
+                                  .Select(item => item.Name())
+                                  .ToList();
+             return extractedValues ?? new List<string>();
         }
     }
 }

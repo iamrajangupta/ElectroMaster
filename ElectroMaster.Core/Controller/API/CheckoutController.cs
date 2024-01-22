@@ -6,6 +6,9 @@ using Umbraco.Commerce.Core.Api;
 using ElectroMaster.Core.Models.System.Checkout;
 using Umbraco.Commerce.Core;
 using Umbraco.Commerce.Core.Models;
+using Umbraco.Commerce.Core.Services;
+using static Lucene.Net.Documents.Field;
+using Umbraco.Commerce.Core.Specifications.Order;
 
 
 namespace ElectroMaster.Core.Controller.API
@@ -15,10 +18,13 @@ namespace ElectroMaster.Core.Controller.API
     public class CheckoutController : UmbracoApiController
     {
         private readonly IUmbracoCommerceApi _commerceApi;
+        private readonly IPaymentService _paymentService;
         private readonly Guid _storeId = new Guid("1f0f0ae0-dcba-4b1c-8584-018cd87f4959");
-        public CheckoutController(UmbracoHelper umbracoHelper, ServiceContext services, IUmbracoCommerceApi commerceApi)
+        public CheckoutController(UmbracoHelper umbracoHelper, ServiceContext services, IUmbracoCommerceApi commerceApi, IPaymentService paymentService)
         {
             _commerceApi = commerceApi;
+
+            _paymentService = paymentService;
         }
 
         Order updatedOrder = null;
@@ -149,11 +155,13 @@ namespace ElectroMaster.Core.Controller.API
         public IActionResult UpdateOrderPaymentMethod(UpdateOrderPaymentMethodDto model)
         {
             try
-            {               
+            {     
+                
                 _commerceApi.Uow.Execute(uow =>
                 {
                     var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
                         .AsWritable(uow)
+                        
                         .SetPaymentMethod(model.PaymentMethod);
 
                     _commerceApi.SaveOrder(order);
@@ -168,6 +176,30 @@ namespace ElectroMaster.Core.Controller.API
             catch (System.ComponentModel.DataAnnotations.ValidationException ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("capture")]
+
+        public async Task<IActionResult> CapturePayment()
+        {
+            try
+            {
+                var currentOrder = CommerceApi.Instance.GetCurrentOrder(_storeId);
+
+                var cc = currentOrder.OrderStatusCode.ToString();
+                var dd = currentOrder.OrderStatusId.ToString();
+
+                // Override IsFinalized property
+                
+
+                // Further processing or capturing payment logic goes here...
+
+                return Ok(new { Message = "Payment captured successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = $"An error occurred during payment capture: {ex.Message}" });
             }
         }
 
