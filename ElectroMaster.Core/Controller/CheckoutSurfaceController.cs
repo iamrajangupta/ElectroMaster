@@ -11,6 +11,8 @@ using Umbraco.Cms.Web.Website.Controllers;
 using Umbraco.Commerce.Core.Api;
 using Umbraco.Commerce.Core;
 using ElectroMaster.Core.Extensions;
+using Stripe.Checkout;
+using Stripe;
 
 
 namespace ElectroMaster.Core.Controller
@@ -135,6 +137,41 @@ namespace ElectroMaster.Core.Controller
             }
 
         }
-       
+
+        public IActionResult CreateCheckoutSession(string secretKey, decimal amount, string successUrl, string cancelUrl, string currency, string productName, int quantity)
+        {
+            var options = new SessionCreateOptions
+            {
+                LineItems = new List<SessionLineItemOptions>
+                {
+                    new SessionLineItemOptions
+                    {
+                        PriceData = new SessionLineItemPriceDataOptions
+                        {
+                            UnitAmount = (long)(amount * 100), // Amount in cents
+                            Currency = currency,
+                            ProductData = new SessionLineItemPriceDataProductDataOptions
+                            {
+                                Name = productName,
+                            },
+                        },
+                        Quantity = quantity,
+                    },
+                },
+                PaymentMethodTypes = new List<string> { "card" },
+                Mode = "payment",
+                SuccessUrl = successUrl,
+                CancelUrl = cancelUrl,
+            };
+
+            StripeConfiguration.ApiKey = secretKey;
+
+            var service = new SessionService();
+            var session = service.Create(options);
+
+            // Redirect the user to the payment page
+            return Redirect(session.Url);
+        }
+
     }
 }
