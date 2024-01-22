@@ -42,6 +42,10 @@ namespace ElectroMaster.Core.Controller.API
                 Date = prodItem.CreateDate.ToString("dd MMM yyyy"),
                 Guid = prodItem.Key,
                 Stock = prodItem.Value<int>("stock"),
+
+               
+                CategoryType = ExtractCategoryTypeValues(prodItem),
+
                 ProductDetail = prodItem.Value<string>("productDetail"),
 
                 // Extracting the Price value
@@ -54,7 +58,8 @@ namespace ElectroMaster.Core.Controller.API
             return new JsonResult(json);
         }
 
-
+       
+       
 
         [HttpGet("{id}")]
 
@@ -110,6 +115,14 @@ namespace ElectroMaster.Core.Controller.API
             var pricePropertyValue = productItem.Value<PricePropertyValue>("price").ToList();
             var price = pricePropertyValue[0].Value;
             return price; 
+        }
+        private List<string> ExtractCategoryTypeValues(IPublishedContent prodItem)
+        {
+            
+            var extractedValues = prodItem.Value<IEnumerable<IPublishedContent>>("categoryType", fallback: Fallback.ToAncestors)?
+                                  .Select(item => item.Name())
+                                  .ToList();
+             return extractedValues ?? new List<string>();
         }
     }
 }
