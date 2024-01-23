@@ -7,10 +7,6 @@ using ElectroMaster.Core.Models.System.Checkout;
 using Umbraco.Commerce.Core;
 using Umbraco.Commerce.Core.Models;
 using Umbraco.Commerce.Core.Services;
-
-using static Lucene.Net.Documents.Field;
-using Umbraco.Commerce.Core.Specifications.Order;
-using Umbraco.Cms.Web.BackOffice.Controllers;
 using Stripe.Checkout;
 using Stripe;
 using System.Globalization;

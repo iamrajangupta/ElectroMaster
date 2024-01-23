@@ -22,6 +22,12 @@
 
     var productImage = Model.Value<MediaWithCrops>("image", fallback: Fallback.ToAncestors);
     var productUrl = productImage != null ? productImage.Url() : null;
+
+    var Products = Umbraco.ContentAtRoot()
+                       .DescendantsOrSelf<Product>()
+                       .Where(x => x.IsVisible())
+                       .OrderByDescending(x => x.CreateDate) // Assuming there's a CreateDate property
+                       .Take(4);
 }
 
 @{
@@ -97,7 +103,7 @@
                         <h3 class="product-price">$@price <del class="product-old-price">$990.00</del></h3>
                         <span class="product-available">In Stock</span>
                     </div>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                    <p>@Model.Value("productDetail")</p>
 
 
                     @using (Html.BeginUmbracoForm("AddToCart", "CartSurface"))
@@ -528,6 +534,7 @@
     <!-- /container -->
 </div>
 <!-- /NEWSLETTER -->
+
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>

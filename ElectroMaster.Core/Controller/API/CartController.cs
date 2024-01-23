@@ -23,11 +23,11 @@ namespace ElectroMaster.Core.Controller.API
         [HttpPost]
         public IActionResult AddToCart(AddToCartDto postModel)
         {
-           
             postModel.ProductCount = postModel.ProductCount <= 0 ? 1 : postModel.ProductCount;
-          
+
             try
             {
+                Guid orderId = Guid.Empty; // Initialize with an empty Guid
                 _commerceApi.Uow.Execute(uow =>
                 {
                     var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
@@ -35,16 +35,21 @@ namespace ElectroMaster.Core.Controller.API
                         .AddProduct(postModel.ProductReference, postModel.ProductVariantReference, postModel.ProductCount);
 
                     _commerceApi.SaveOrder(order);
+                    orderId = order.Id;
 
                     uow.Complete();
                 });
+
+                // Return the order ID along with the OK response
+                return Ok(new { OrderId = orderId });
             }
             catch (ValidationException ex)
             {
-
+                // Handle validation exception if needed
+                return BadRequest("Validation failed");
             }
-            return Ok();
         }
+
 
         [HttpDelete]
         public IActionResult RemoveFromCart(RemoveFromCartDto postModel)
@@ -52,9 +57,8 @@ namespace ElectroMaster.Core.Controller.API
             try
             {
                 _commerceApi.Uow.Execute(uow =>
-                {
-                   
-                    var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
+                {                   
+                    var order = _commerceApi.GetOrder(_storeId)
                         .AsWritable(uow)
                         .RemoveOrderLine(postModel.OrderLineId);
 
@@ -69,14 +73,21 @@ namespace ElectroMaster.Core.Controller.API
             }         
             return Ok();
         }
-           
-        [HttpGet]
-        public IActionResult GetOrders()
+
+        [HttpPost("GetOrders")]
+        public IActionResult GetOrders(Guid orderId)
         {
             try
             {
-                
-                var order = _commerceApi.GetOrCreateCurrentOrder(_storeId);               
+                // Retrieve the specific order by ID
+                var order = _commerceApi.GetOrder(orderId);
+
+                if (order == null)
+                {
+                    // Handle the case where the order with the specified ID is not found
+                    return NotFound("Order not found");
+                }
+
                 var orderLines = new List<OrderLineDto>();
 
                 foreach (var item in order.OrderLines)
@@ -85,13 +96,12 @@ namespace ElectroMaster.Core.Controller.API
                     {
                         OrderLineId = item.Id,
                         ProductReference = item.ProductReference,
-                        Name = item.Name,                  
+                        Name = item.Name,
                         PriceExclTax = item.UnitPrice.Base.WithoutTax,
                         Tax = item.UnitPrice.Base.Tax,
                         UnitPrice = item.UnitPrice.WithoutAdjustments,
                         Quantity = (int)item.Quantity,
                         Total = item.TotalPrice.WithoutAdjustments,
-                      
                     };
 
                     orderLines.Add(orderLineModel);
@@ -111,6 +121,7 @@ namespace ElectroMaster.Core.Controller.API
                 return BadRequest(ex.Message);
             }
         }
+
 
     }
 }

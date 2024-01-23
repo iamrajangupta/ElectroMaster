@@ -231,7 +231,5 @@ namespace ElectroMaster.Core.Controller
             }
         }
 
-
-
     }
 }
