@@ -5,11 +5,10 @@
 @using Umbraco.Commerce.Core.Models
 @using Umbraco.Commerce.Extensions
 @{
-	Layout = "Master.cshtml";
+    Layout = "Master.cshtml";
     var store = Model.Value<StoreReadOnly>("store", fallback: Fallback.ToAncestors);
     var Order = CommerceApi.Instance.GetCurrentFinalizedOrder(store.Id);
-
-} 
+}
 
 <div class="section order-cnf">
     <div class="container">
@@ -26,3 +25,94 @@
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@* @using Umbraco.Cms.Web.Common.PublishedModels;
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.OrderConfirmation>
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
+@using Umbraco.Commerce.Core.Api
+@using Umbraco.Commerce.Core.Models
+@using Umbraco.Commerce.Extensions
+@{
+    Layout = "Master.cshtml";
+    var store = Model.Value<StoreReadOnly>("store", fallback: Fallback.ToAncestors);
+    Guid? orderNumber = TempData["ordernumber"] as Guid?;
+
+
+
+}
+
+@if (orderNumber.HasValue)
+{
+    var order = CommerceApi.Instance.GetOrder(orderNumber.Value);
+
+    <div class="section order-cnf">
+        <div class="container">
+            <div class="col-12 order-details">
+                <div class="section-title text-center">
+                    <div class="circle-icon">
+                        <i class="fa fa-check-circle-o circle-icon animated-icon"></i>
+                    </div>
+                    <h3 class="title">Order Confirmation</h3>
+                    <h3 class="text-xl font-medium mb-4">Thank you for your order #@(Order.OrderNumber ?? Order.CartNumber)</h3>
+                    <p class="mb-4 order-btn">A confirmation email has been sent to <strong>@(Order.CustomerInfo.Email)</strong></p>
+                    <p><a href="/" class="primary-btn order-btn">Return to Store</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+ *@

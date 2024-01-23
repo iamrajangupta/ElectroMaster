@@ -14,6 +14,7 @@ using Stripe.Checkout;
 using Stripe;
 using Umbraco.Commerce.Core.Models;
 using System.Globalization;
+using Umbraco.Commerce.Extensions;
 
 
 namespace ElectroMaster.Core.Controller
@@ -141,51 +142,39 @@ namespace ElectroMaster.Core.Controller
         }
 
         [HttpPost]
-        public IActionResult CreateCheckoutSession(string amount, string productName, string orderId)
+        public IActionResult CreateCheckoutSession(decimal amount, string productName, string orderId, int quantity)
         {
             try
             {
-                decimal amountDecimal;
-
-                if (decimal.TryParse(amount.Substring(1), NumberStyles.Currency, CultureInfo.CurrentCulture, out amountDecimal))
-                {                   
-                    var OrderId = orderId;
-                    var options = new SessionCreateOptions
-
+                var options = new SessionCreateOptions
+                {
+                    LineItems = new List<SessionLineItemOptions>
                     {
-                        LineItems = new List<SessionLineItemOptions>
+                        new SessionLineItemOptions
                         {
-                            new SessionLineItemOptions
+                            PriceData = new SessionLineItemPriceDataOptions
                             {
-                                PriceData = new SessionLineItemPriceDataOptions
+                                UnitAmount = (long)(amount * 100),
+                                Currency = "GBP",
+                                ProductData = new SessionLineItemPriceDataProductDataOptions
                                 {
-                                    UnitAmount = (long)(amountDecimal * 100),
-                                    Currency = "GBP",
-                                    ProductData = new SessionLineItemPriceDataProductDataOptions
-                                    {
-                                        Name = productName,
-                                    },
+                                    Name = productName,
                                 },
-                                Quantity = 1,
                             },
+                            Quantity = quantity,
                         },
+                    },
+                    PaymentMethodTypes = new List<string> { "card" },
+                    Mode = "payment",
+                    SuccessUrl = $"{Request.Scheme}://{Request.Host}/cart/success?session_id={{CHECKOUT_SESSION_ID}}&orderId={orderId}",
+                    CancelUrl = $"{Request.Scheme}://{Request.Host}/cart/",
+                };
 
-                        PaymentMethodTypes = new List<string> { "card" },
-                        Mode = "payment",
-                        SuccessUrl = $"{Request.Scheme}://{Request.Host}/cart/success?session_id={{CHECKOUT_SESSION_ID}}",
-                        CancelUrl = $"{Request.Scheme}://{Request.Host}/cart/"
-                    };
-                    StripeConfiguration.ApiKey = _stripeSecretKey;
-                    var service = new SessionService();
-                    var session = service.Create(options);
-                   
-                    return Redirect(session.Url);
-                }
+                StripeConfiguration.ApiKey = _stripeSecretKey;
+                var service = new SessionService();
+                var session = service.Create(options);
 
-                else
-                {                  
-                    return BadRequest(new { ErrorMessage = "Failed to parse amount", ErrorDetails = "Invalid amount format" });
-                }
+                return Redirect(session.Url);
             }
             catch (Exception ex)
             {
@@ -195,13 +184,11 @@ namespace ElectroMaster.Core.Controller
 
 
         [HttpGet("/cart/success")]
-        public IActionResult PaymentSuccess([FromQuery] string session_id)
+        public IActionResult PaymentSuccess([FromQuery] string session_id, [FromQuery] string orderId)
         {
             try
             {
-                var secretKey = _stripeSecretKey;
-                StripeConfiguration.ApiKey = secretKey;
-
+                StripeConfiguration.ApiKey = _stripeSecretKey;
                 var service = new SessionService();
                 var session = service.Get(session_id);
 
@@ -212,16 +199,15 @@ namespace ElectroMaster.Core.Controller
 
                     _commerceApi.Uow.Execute(uow =>
                     {
-                        Guid orderId = new Guid("e01e1896-7b61-4d81-b15b-018d34ed68b4");
+                        Guid orderIdGuid = new Guid(orderId);
 
-                        var store = CurrentPage.GetStore();
-                        var order = _commerceApi.GetOrder(orderId)
+                        var order = _commerceApi.GetOrder(orderIdGuid)
                             .AsWritable(uow);
 
+                        order.InitializeTransaction();
                         PaymentStatus paymentStatus = PaymentStatus.Authorized;
-                        order.Finalize(amountAuthorized, transactionId, paymentStatus);
 
-                        // Save the order
+                        order.Finalize(amountAuthorized, transactionId, paymentStatus);
                         _commerceApi.SaveOrder(order);
 
                         uow.Complete();
@@ -239,7 +225,12 @@ namespace ElectroMaster.Core.Controller
             {
                 return BadRequest(new { ErrorMessage = "Failed to set order payment method", ErrorDetails = ex.Message });
             }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { ErrorMessage = "An error occurred", ErrorDetails = ex.Message });
+            }
         }
+
 
 
     }
