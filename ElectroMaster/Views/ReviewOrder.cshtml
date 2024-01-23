@@ -100,3 +100,19 @@ else
 {
     <h4>You have no order in cart</h4>
 }
+
+
+@using (Html.BeginUmbracoForm("CreateCheckoutSession", "CheckoutSurface"))
+{
+    var price = Order.TotalPrice.WithoutAdjustments.Formatted();
+    var orderNo = Order.OrderNumber;
+    var orderId = Order.Id;
+    @Html.Hidden("amount", price)
+    @Html.Hidden("successUrl", "/")
+    @Html.Hidden("orderId", orderId)
+    @Html.Hidden("cancelUrl", "/")
+    @Html.Hidden("productName", orderNo)
+    @Html.Hidden("quantity", 1)
+
+    <button type="submit" id="checkoutButton">Proceed to Checkout</button>
+}

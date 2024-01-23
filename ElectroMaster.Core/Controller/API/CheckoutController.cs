@@ -7,8 +7,14 @@ using ElectroMaster.Core.Models.System.Checkout;
 using Umbraco.Commerce.Core;
 using Umbraco.Commerce.Core.Models;
 using Umbraco.Commerce.Core.Services;
+
 using static Lucene.Net.Documents.Field;
 using Umbraco.Commerce.Core.Specifications.Order;
+using Umbraco.Cms.Web.BackOffice.Controllers;
+using Stripe.Checkout;
+using Stripe;
+using System.Globalization;
+using Umbraco.Commerce.Extensions;
 
 
 namespace ElectroMaster.Core.Controller.API
@@ -132,7 +138,7 @@ namespace ElectroMaster.Core.Controller.API
         {
             try
             {
-                
+
                 var paymentMethods = _commerceApi.GetPaymentMethods(_storeId);
 
                 if (paymentMethods != null && paymentMethods.Any())
@@ -155,13 +161,13 @@ namespace ElectroMaster.Core.Controller.API
         public IActionResult UpdateOrderPaymentMethod(UpdateOrderPaymentMethodDto model)
         {
             try
-            {     
-                
+            {
+
                 _commerceApi.Uow.Execute(uow =>
                 {
                     var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
                         .AsWritable(uow)
-                        
+
                         .SetPaymentMethod(model.PaymentMethod);
 
                     _commerceApi.SaveOrder(order);
@@ -171,7 +177,7 @@ namespace ElectroMaster.Core.Controller.API
                     uow.Complete();
                 });
 
-                return Ok(updatedOrder); 
+                return Ok(updatedOrder);
             }
             catch (System.ComponentModel.DataAnnotations.ValidationException ex)
             {
@@ -179,30 +185,113 @@ namespace ElectroMaster.Core.Controller.API
             }
         }
 
-        [HttpGet("capture")]
-
-        public async Task<IActionResult> CapturePayment()
+        [HttpPost("CreateCheckoutSession")]
+        public IActionResult CreateCheckoutSession([FromBody] Guid orderID)
         {
             try
             {
-                var currentOrder = CommerceApi.Instance.GetCurrentOrder(_storeId);
+                var Order = CommerceApi.Instance.GetOrder(orderID);
 
-                var cc = currentOrder.OrderStatusCode.ToString();
-                var dd = currentOrder.OrderStatusId.ToString();
+                if (Order != null)
+                {
+                    var price = Order.TotalPrice.WithoutAdjustments.Formatted().ToString();
+                    var orderNo = Order.OrderNumber;
 
-                // Override IsFinalized property
-                
+                    decimal amountDecimal;
+                    if (decimal.TryParse(price.Substring(1), NumberStyles.Currency, CultureInfo.CurrentCulture, out amountDecimal))
+                    {
+                        // Convert to cents (integer)
+                        long amountInCents = (long)(amountDecimal * 100);
 
-                // Further processing or capturing payment logic goes here...
 
-                return Ok(new { Message = "Payment captured successfully." });
+                        var options = new SessionCreateOptions
+                        {
+                            LineItems = new List<SessionLineItemOptions>
+                            {
+                                new SessionLineItemOptions
+                                {
+                                    PriceData = new SessionLineItemPriceDataOptions
+                                    {
+                                        UnitAmount = amountInCents,
+                                        Currency = "GBP",
+                                        ProductData = new SessionLineItemPriceDataProductDataOptions
+                                        {
+                                            Name = orderNo,
+                                        },
+                                    },
+                                    Quantity = 1,
+                                },
+                            },
+                            PaymentMethodTypes = new List<string> { "card" },
+                            Mode = "payment",
+                            SuccessUrl = $"{Request.Scheme}://{Request.Host}/cart/success?session_id={{CHECKOUT_SESSION_ID}}",
+                            CancelUrl = $"{Request.Scheme}://{Request.Host}/cart/"
+                        };
+
+                        StripeConfiguration.ApiKey = "sk_test_51NN9SASCduWSbaBPQNIs7V75kRLkaLOnIQEWGBXpYv7b8yc64Yz8ljMx6fZ8tFjQCkuAV69sNWDYfbDbmkgMFLVS00FCtszGCz";
+                        var service = new SessionService();
+                        var session = service.Create(options);
+
+                        // Return the session URL
+                        return Ok(new { SessionUrl = session.Url });
+                    }
+                    else
+                    {
+                        // Handle parsing error
+                        return BadRequest(new { ErrorMessage = "Failed to parse amount", ErrorDetails = "Invalid amount format" });
+                    }
+                }
+                return Ok();
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Message = $"An error occurred during payment capture: {ex.Message}" });
+                // Handle other exceptions
+                return BadRequest(new { ErrorMessage = "An error occurred", ErrorDetails = ex.Message });
             }
         }
 
+        [HttpPost("/cart/success")]
+        public IActionResult PaymentSuccess([FromBody] PaymentIntent paymentIntent)
+        {
+            try
+            {
+                // Verify the payment intent using your Stripe secret key
+                var service = new PaymentIntentService();
+                var retrievedIntent = service.Get(paymentIntent.Id);
+
+                if (retrievedIntent.Status == "succeeded")
+                {
+                    // Payment was successful
+                    // Update order status, send push notification, etc.
+                    UpdateOrderStatus(retrievedIntent.Metadata["orderID"]);
+                    SendPushNotification();
+
+                    return Ok(new { Message = "Payment successful" });
+                }
+                else
+                {
+                    // Handle unsuccessful payment
+                    return BadRequest(new { ErrorMessage = "Payment failed", ErrorDetails = "Payment intent not succeeded" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { ErrorMessage = "An error occurred", ErrorDetails = ex.Message });
+            }
+        }
+
+        private void UpdateOrderStatus(string orderID)
+        {
+            // Add logic to update the order status in your database
+            // For example, set the order status to "paid"
+            // This depends on your database structure and design
+        }
+
+        private void SendPushNotification()
+        {
+            // Add logic to send a push notification to the Flutter app
+            // This depends on your implementation using Firebase Cloud Messaging (FCM) or another push notification service
+        }
 
     }
 }
