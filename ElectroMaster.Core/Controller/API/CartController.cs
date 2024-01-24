@@ -23,10 +23,7 @@ namespace ElectroMaster.Core.Controller.API
         [HttpPost]
         public IActionResult AddToCart(AddToCartDto postModel)
         {
-            postModel.ProductCount = postModel.ProductCount <= 0 ? 1 : postModel.ProductCount;
-
-
-            
+            postModel.ProductCount = postModel.ProductCount <= 0 ? 1 : postModel.ProductCount;            
             try
             {
                 Guid orderId = Guid.Empty; // Initialize with an empty Guid
@@ -122,6 +119,27 @@ namespace ElectroMaster.Core.Controller.API
             }
         }
 
+        [HttpPost("AddItemtoOrder")]
+        public IActionResult AddItemToOrder(AddToCartDto postModel, Guid orderId)
+        {
+            try
+            {
+                _commerceApi.Uow.Execute(uow =>
+                {
+                    var order = _commerceApi.GetOrder(orderId)
+                       .AsWritable(uow)
+                       .AddProduct(postModel.ProductReference, postModel.ProductVariantReference, postModel.ProductCount);
 
+                    _commerceApi.SaveOrder(order);
+
+                    uow.Complete();
+                });
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            return Ok();
+        }
     }
 }
