@@ -25,6 +25,8 @@ namespace ElectroMaster.Core.Controller.API
         {
             postModel.ProductCount = postModel.ProductCount <= 0 ? 1 : postModel.ProductCount;
 
+
+            
             try
             {
                 Guid orderId = Guid.Empty; // Initialize with an empty Guid
@@ -74,17 +76,15 @@ namespace ElectroMaster.Core.Controller.API
             return Ok();
         }
 
-        [HttpPost("GetOrders")]
+        [HttpGet("GetOrders")]
         public IActionResult GetOrders(Guid orderId)
         {
             try
             {
-                // Retrieve the specific order by ID
                 var order = _commerceApi.GetOrder(orderId);
 
                 if (order == null)
                 {
-                    // Handle the case where the order with the specified ID is not found
                     return NotFound("Order not found");
                 }
 

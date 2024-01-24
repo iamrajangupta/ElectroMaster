@@ -1,3 +1,11 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Text;
+using Umbraco.Cms.Core.DependencyInjection;
+using Umbraco.Cms.Web.Common;
 using Umbraco.Commerce.Extensions;
 
 namespace ElectroMaster
@@ -26,6 +34,7 @@ namespace ElectroMaster
                 });
             });
 
+          
             // Add MVC
             services.AddControllers();
 
@@ -65,7 +74,11 @@ namespace ElectroMaster
                     c.SwaggerEndpoint("/swagger/default/swagger.json", "Default API");
                 }
             });
-         
+
+            // Use authentication middleware
+            app.UseAuthentication();
+            app.UseAuthorization();
+
             // Use Umbraco middleware and configure endpoints
             app.UseUmbraco()
                 .WithMiddleware(u =>
