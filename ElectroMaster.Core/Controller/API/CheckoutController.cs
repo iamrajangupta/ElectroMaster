@@ -11,6 +11,7 @@ using Stripe.Checkout;
 using Stripe;
 using System.Globalization;
 using Umbraco.Commerce.Extensions;
+using ElectroMaster.Core.Models.System.Cart;
 
 
 namespace ElectroMaster.Core.Controller.API
@@ -289,5 +290,41 @@ namespace ElectroMaster.Core.Controller.API
             // This depends on your implementation using Firebase Cloud Messaging (FCM) or another push notification service
         }
 
+        [HttpPost("CreateUserDetail")]
+        public IActionResult CreateUserDetail(CreateUserDto model)
+        {
+            try
+            {
+                _commerceApi.Uow.Execute(uow =>
+                {
+                    var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
+                        .AsWritable(uow)
+                        .SetProperties(new Dictionary<string, string>
+                        {
+                        { Constants.Properties.Customer.EmailPropertyAlias, model.Email },
+                        { "marketingOptIn", model.MarketingOptIn ? "1" : "0" },
+                        { Constants.Properties.Customer.FirstNamePropertyAlias, model.FirstName },
+                        { Constants.Properties.Customer.LastNamePropertyAlias, model.LastName },
+                        });
+
+                    // Check if model.Country is not null before setting payment and shipping country region
+                    if (model.Country != null)
+                    {
+                        order
+                        .SetPaymentCountryRegion(model.Country, null)
+                        .SetShippingCountryRegion(model.Country, null);
+                    }
+
+                    _commerceApi.SaveOrder(order);
+
+                    uow.Complete();
+                });
+            }
+            catch (System.ComponentModel.DataAnnotations.ValidationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            return Ok();
+        }
     }
 }

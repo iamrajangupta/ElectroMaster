@@ -204,10 +204,12 @@ namespace ElectroMaster.Core.Controller
                         var order = _commerceApi.GetOrder(orderIdGuid)
                             .AsWritable(uow);
 
-                        order.InitializeTransaction();
+                         order.InitializeTransaction();
+
                         PaymentStatus paymentStatus = PaymentStatus.Authorized;
 
                         order.Finalize(amountAuthorized, transactionId, paymentStatus);
+
                         _commerceApi.SaveOrder(order);
 
                         uow.Complete();
@@ -230,6 +232,8 @@ namespace ElectroMaster.Core.Controller
                 return StatusCode(500, new { ErrorMessage = "An error occurred", ErrorDetails = ex.Message });
             }
         }
+
+
 
     }
 }
