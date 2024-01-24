@@ -67,10 +67,10 @@ namespace ElectroMaster.Core.Controller
 
             try
             {
-                var storeId = new Guid("1f0f0ae0-dcba-4b1c-8584-018cd87f4959");
+                var store = CurrentPage.GetStore();
                 _commerceApi.Uow.Execute(uow =>
                 {
-                    var order = _commerceApi.GetOrCreateCurrentOrder(storeId)
+                    var order = _commerceApi.GetOrCreateCurrentOrder(store.Id)
                         .AsWritable(uow)
                         .RemoveOrderLine(postModel.OrderLineId);
 

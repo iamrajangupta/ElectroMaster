@@ -232,8 +232,5 @@ namespace ElectroMaster.Core.Controller
                 return StatusCode(500, new { ErrorMessage = "An error occurred", ErrorDetails = ex.Message });
             }
         }
-
-
-
     }
 }

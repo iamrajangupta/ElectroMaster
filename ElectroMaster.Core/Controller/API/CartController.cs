@@ -6,6 +6,7 @@ using Umbraco.Commerce.Core.Api;
 using Umbraco.Commerce.Extensions;
 using System.ComponentModel.DataAnnotations;
 using ElectroMaster.Core.Models.System.Cart;
+using electromaster.core.models.system.cart;
 
 namespace ElectroMaster.Core.Controller.API
 {
@@ -13,12 +14,14 @@ namespace ElectroMaster.Core.Controller.API
     [Route("api/cart")]
     public class CartController : UmbracoApiController
     {
+
         private readonly IUmbracoCommerceApi _commerceApi;    
         private readonly Guid _storeId = new Guid("1f0f0ae0-dcba-4b1c-8584-018cd87f4959");
         public CartController(UmbracoHelper umbracoHelper, ServiceContext services, IUmbracoCommerceApi commerceApi)
         {
             _commerceApi = commerceApi;
         }
+
 
         [HttpPost]
         public IActionResult AddToCart(AddToCartDto postModel)
@@ -37,14 +40,11 @@ namespace ElectroMaster.Core.Controller.API
                     orderId = order.Id;
 
                     uow.Complete();
-                });
-
-                // Return the order ID along with the OK response
+                });             
                 return Ok(new { OrderId = orderId });
             }
             catch (ValidationException ex)
-            {
-                // Handle validation exception if needed
+            {                
                 return BadRequest("Validation failed");
             }
         }
@@ -55,11 +55,19 @@ namespace ElectroMaster.Core.Controller.API
         {
             try
             {
+                
+                if (postModel == null)
+                {
+                    return BadRequest("RemoveFromCartDto cannot be null.");
+                }
+
                 _commerceApi.Uow.Execute(uow =>
-                {                   
-                    var order = _commerceApi.GetOrder(_storeId)
-                        .AsWritable(uow)
-                        .RemoveOrderLine(postModel.OrderLineId);
+                {
+                    var orders = _commerceApi.GetOrder(postModel.OrderId);
+
+                    var  order = orders
+                       .AsWritable(uow)
+                       .RemoveOrderLine(postModel.OrderLineId);
 
                     _commerceApi.SaveOrder(order);
 
@@ -73,12 +81,12 @@ namespace ElectroMaster.Core.Controller.API
             return Ok();
         }
 
-        [HttpGet("GetOrders")]
-        public IActionResult GetOrders(Guid orderId)
+        [HttpGet]
+        public IActionResult GetOrders(Guid OrderId)
         {
             try
             {
-                var order = _commerceApi.GetOrder(orderId);
+                var order = _commerceApi.GetOrder(OrderId);
 
                 if (order == null)
                 {
@@ -109,8 +117,9 @@ namespace ElectroMaster.Core.Controller.API
 
                 return Ok(new
                 {
+                    OrderID = OrderId,
                     OrderLines = orderLines,
-                    SubTotal = subTotal,
+                    SubTotal = subTotal,                   
                 });
             }
             catch (ValidationException ex)
@@ -119,16 +128,20 @@ namespace ElectroMaster.Core.Controller.API
             }
         }
 
-        [HttpPost("AddItemtoOrder")]
-        public IActionResult AddItemToOrder(AddToCartDto postModel, Guid orderId)
+        [HttpPut]
+        public IActionResult AddItemToOrder(UpdateCartDto postModel)
         {
             try
-            {
+            {              
+                if (postModel.OrderId == null)
+                {
+                    return BadRequest("Order ID cannot be null.");
+                }
                 _commerceApi.Uow.Execute(uow =>
                 {
-                    var order = _commerceApi.GetOrder(orderId)
-                       .AsWritable(uow)
-                       .AddProduct(postModel.ProductReference, postModel.ProductVariantReference, postModel.ProductCount);
+                    var order = _commerceApi.GetOrder(postModel.OrderId)
+                        .AsWritable(uow)
+                        .AddProduct(postModel.ProductReference, postModel.ProductVariantReference, postModel.ProductCount);
 
                     _commerceApi.SaveOrder(order);
 
@@ -141,5 +154,6 @@ namespace ElectroMaster.Core.Controller.API
             }
             return Ok();
         }
+
     }
 }

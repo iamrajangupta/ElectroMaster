@@ -9,5 +9,8 @@ namespace ElectroMaster.Core.Models.System.Cart
     public class RemoveFromCartDto
     {
         public Guid OrderLineId { get; set; }
+
+        public Guid OrderId { get; set; } = Guid.Empty;
+
     }
 }

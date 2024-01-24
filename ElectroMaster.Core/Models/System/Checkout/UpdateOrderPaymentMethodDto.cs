@@ -10,5 +10,7 @@ namespace ElectroMaster.Core.Models.System.Checkout
     {
         public Guid PaymentMethod { get; set; }
 
+        public Guid OrderId { get; set; } = Guid.Empty;
+
     }
 }

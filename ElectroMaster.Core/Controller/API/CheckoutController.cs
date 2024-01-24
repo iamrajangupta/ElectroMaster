@@ -26,7 +26,6 @@ namespace ElectroMaster.Core.Controller.API
         public CheckoutController(UmbracoHelper umbracoHelper, ServiceContext services, IUmbracoCommerceApi commerceApi, IPaymentService paymentService)
         {
             _commerceApi = commerceApi;
-
             _paymentService = paymentService;
         }
 
@@ -40,8 +39,8 @@ namespace ElectroMaster.Core.Controller.API
 
                 _commerceApi.Uow.Execute(uow =>
                 {
-                    var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
-                        .AsWritable(uow)
+                    var order = _commerceApi.GetOrder(model.OrderId)
+                       .AsWritable(uow)
                         .SetProperties(new Dictionary<string, string>
                         {
                             { Constants.Properties.Customer.EmailPropertyAlias, model.Email },
@@ -111,7 +110,7 @@ namespace ElectroMaster.Core.Controller.API
             {
                 _commerceApi.Uow.Execute(uow =>
                 {
-                    var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
+                    var order = _commerceApi.GetOrder(model.OrderId)
                         .AsWritable(uow)
                         .SetShippingMethod(model.ShippingMethod);
 
@@ -162,7 +161,7 @@ namespace ElectroMaster.Core.Controller.API
 
                 _commerceApi.Uow.Execute(uow =>
                 {
-                    var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
+                    var order = _commerceApi.GetOrder(model.OrderId)
                         .AsWritable(uow)
 
                         .SetPaymentMethod(model.PaymentMethod);
@@ -251,15 +250,13 @@ namespace ElectroMaster.Core.Controller.API
         public IActionResult PaymentSuccess([FromBody] PaymentIntent paymentIntent)
         {
             try
-            {
-                // Verify the payment intent using your Stripe secret key
+            {               
                 var service = new PaymentIntentService();
                 var retrievedIntent = service.Get(paymentIntent.Id);
 
                 if (retrievedIntent.Status == "succeeded")
                 {
-                    // Payment was successful
-                    // Update order status, send push notification, etc.
+                   
                     UpdateOrderStatus(retrievedIntent.Metadata["orderID"]);
                     SendPushNotification();
 
@@ -297,7 +294,7 @@ namespace ElectroMaster.Core.Controller.API
             {
                 _commerceApi.Uow.Execute(uow =>
                 {
-                    var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
+                    var order = _commerceApi.GetOrder(model.OrderId)
                         .AsWritable(uow)
                         .SetProperties(new Dictionary<string, string>
                         {
