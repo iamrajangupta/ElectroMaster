@@ -22,7 +22,6 @@ namespace ElectroMaster.Core.Controller.API
             _commerceApi = commerceApi;
         }
 
-
         [HttpPost]
         public IActionResult AddToCart(AddToCartDto postModel)
         {

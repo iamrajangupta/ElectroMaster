@@ -74,6 +74,14 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		public virtual global::Umbraco.Commerce.Cms.Models.PricePropertyValue Price => this.Value<global::Umbraco.Commerce.Cms.Models.PricePropertyValue>(_publishedValueFallback, "price");
 
 		///<summary>
+		/// Product Detail
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "13.0.0+9dfb300")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("productDetail")]
+		public virtual string ProductDetail => this.Value<string>(_publishedValueFallback, "productDetail");
+
+		///<summary>
 		/// Product Name
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "13.0.0+9dfb300")]

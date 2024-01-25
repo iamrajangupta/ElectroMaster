@@ -20,7 +20,7 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 {
 	/// <summary>Checkout Page</summary>
 	[PublishedModel("uccCheckoutPage")]
-	public partial class UccCheckoutPage : UccBasePage
+	public partial class UccCheckoutPage : PublishedContentModel
 	{
 		// helpers
 #pragma warning disable 0109 // new is redundant

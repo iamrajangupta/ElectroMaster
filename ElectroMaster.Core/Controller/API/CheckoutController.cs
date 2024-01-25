@@ -246,46 +246,46 @@ namespace ElectroMaster.Core.Controller.API
             }
         }
 
-        [HttpPost("/cart/success")]
-        public IActionResult PaymentSuccess([FromBody] PaymentIntent paymentIntent)
-        {
-            try
-            {               
-                var service = new PaymentIntentService();
-                var retrievedIntent = service.Get(paymentIntent.Id);
+        
+        //public IActionResult PaymentSuccess([FromBody] PaymentIntent paymentIntent)
+        //{
+        //    try
+        //    {               
+        //        var service = new PaymentIntentService();
+        //        var retrievedIntent = service.Get(paymentIntent.Id);
 
-                if (retrievedIntent.Status == "succeeded")
-                {
+        //        if (retrievedIntent.Status == "succeeded")
+        //        {
                    
-                    UpdateOrderStatus(retrievedIntent.Metadata["orderID"]);
-                    SendPushNotification();
+        //            UpdateOrderStatus(retrievedIntent.Metadata["orderID"]);
+        //            SendPushNotification();
 
-                    return Ok(new { Message = "Payment successful" });
-                }
-                else
-                {
-                    // Handle unsuccessful payment
-                    return BadRequest(new { ErrorMessage = "Payment failed", ErrorDetails = "Payment intent not succeeded" });
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { ErrorMessage = "An error occurred", ErrorDetails = ex.Message });
-            }
-        }
+        //            return Ok(new { Message = "Payment successful" });
+        //        }
+        //        else
+        //        {
+        //            // Handle unsuccessful payment
+        //            return BadRequest(new { ErrorMessage = "Payment failed", ErrorDetails = "Payment intent not succeeded" });
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(new { ErrorMessage = "An error occurred", ErrorDetails = ex.Message });
+        //    }
+        //}
 
-        private void UpdateOrderStatus(string orderID)
-        {
-            // Add logic to update the order status in your database
-            // For example, set the order status to "paid"
-            // This depends on your database structure and design
-        }
+        //private void UpdateOrderStatus(string orderID)
+        //{
+        //    // Add logic to update the order status in your database
+        //    // For example, set the order status to "paid"
+        //    // This depends on your database structure and design
+        //}
 
-        private void SendPushNotification()
-        {
-            // Add logic to send a push notification to the Flutter app
-            // This depends on your implementation using Firebase Cloud Messaging (FCM) or another push notification service
-        }
+        //private void SendPushNotification()
+        //{
+        //    // Add logic to send a push notification to the Flutter app
+        //    // This depends on your implementation using Firebase Cloud Messaging (FCM) or another push notification service
+        //}
 
         [HttpPost("CreateUserDetail")]
         public IActionResult CreateUserDetail(CreateUserDto model)
