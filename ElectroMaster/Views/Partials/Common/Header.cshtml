@@ -18,7 +18,7 @@
 				<li><a href="#"><i class="fa fa-map-marker"></i> 1734 Stonecoal Road</a></li>
 			</ul>
 			<ul class="header-links pull-right">
-				<li><a href="#"><i class="fa fa-dollar"></i> USD</a></li>
+				<li id="translate" style="cursor: pointer; color: white;"><i class="fa fa-language"></i> Language</li>
 				<li><a href="/my-account"><i class="fa fa-user-o"></i> My Account</a></li>
 			</ul>
 		</div>
@@ -75,6 +75,7 @@
 								<div class="qty">
 									@(currentOrder != null ? currentOrder.TotalQuantity.ToString("0") : "0")
 								</div>
+
 							</a>							
 						</div>
 						<!-- /Cart -->
@@ -98,3 +99,21 @@
 	<!-- /MAIN HEADER -->
 </header>
 <!-- /HEADER -->
+<!-- Add the following script to include the Google Translate API -->
+<!-- Include the Google Translate scripts here -->
+
+@* <p id="translate" style="cursor: pointer;">Translate</p>
+ *@
+<script>
+	var isTranslateDivVisible = false;
+
+	// Add an event listener to the p tag
+	document.getElementById('translate').addEventListener('click', function () {
+		// Get the Google Translate div
+		var translateDiv = document.getElementById('google_translate_element');
+
+		// Toggle the visibility of the Google Translate div
+		isTranslateDivVisible = !isTranslateDivVisible;
+		translateDiv.style.display = isTranslateDivVisible ? 'block' : 'none';
+	});
+</script>

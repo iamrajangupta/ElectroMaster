@@ -56,22 +56,47 @@
             }
         </div>
         <!-- /row -->
+        <div onclick="scrollToSection('section2')">&#9650;</div>
     </div>
     <!-- /container -->
 </div>
 <!-- /SECTION -->
+
+
+
+
+<!-- Icon to trigger smooth scroll -->
+<script>
+    function scrollToSection(sectionId) {
+        const section = document.getElementById(sectionId),
+            start = window.scrollY || window.pageYOffset,
+            target = section.getBoundingClientRect().top + start;
+
+        function animateScroll(time, startTime = time) {
+            const progress = Math.min((time - startTime) / 1000, 1),
+                ease = progress < 0.5 ? 2 * progress ** 2 : 1 - (2 - 2 * progress) ** 2 / 2;
+
+            window.scrollTo(0, start + (target - start) * ease);
+            if (progress < 1) requestAnimationFrame((t) => animateScroll(t, startTime));
+        }
+
+        requestAnimationFrame(animateScroll);
+    }
+</script>
+
+
+
+
 <!-- SECTION -->
 <div class="section">
     <!-- container -->
     <div class="container">
         <!-- row -->
         <div class="row">
-
             <!-- section title -->
             <div class="col-md-12">
                 <div class="section-title">
                     <h3 class="title">New Products</h3>
-
                 </div>
             </div>
             <!-- /section title -->
@@ -125,7 +150,8 @@
                                             <div class="add-to-cart">
                                                 @using (Html.BeginUmbracoForm("AddToCart", "CartSurface"))
                                                 {
-                                                    @Html.Hidden("productReference", productReference);                                                   
+                                                    @Html.Hidden("productReference", productReference)
+                                                    ;
                                                     <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
                                                 }
                                             </div>
@@ -473,6 +499,24 @@
     <!-- /container -->
 </div>
 <!-- /SECTION -->
+
+
+
+
+<section id="section2">
+    <h1>Section 2</h1>
+</section>
+
+
+
+
+
+
+
+
+
+
+
 <!-- NEWSLETTER -->
 <div id="newsletter" class="section">
     <!-- container -->
