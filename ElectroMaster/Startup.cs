@@ -1,3 +1,4 @@
+using ElectroMaster.Core.Authentication;
 using Umbraco.Commerce.Extensions;
 namespace ElectroMaster
 {
@@ -28,6 +29,13 @@ namespace ElectroMaster
           
             // Add MVC
             services.AddControllers();
+
+            services.AddAuthentication(ApiKeyAuthenticationDefaults.AuthenticationScheme)
+           .AddApiKey(options =>
+           {
+               // ?? the api key is read from the appsettings.json here.
+               options.ApiKey = _config.GetValue<string>("ApiConnection:ApiKey");
+           });
 
             // Add Umbraco services
             services.AddUmbraco(_env, _config)

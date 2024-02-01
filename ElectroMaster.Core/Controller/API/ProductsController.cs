@@ -8,6 +8,8 @@ using Umbraco.Cms.Core.Models;
 
 using Umbraco.Commerce.Core.Api;
 using Umbraco.Commerce.Cms.Models;
+using ElectroMaster.Core.Authentication;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ElectroMaster.Core.Controller.API
 {
@@ -25,9 +27,8 @@ namespace ElectroMaster.Core.Controller.API
             _services = services;
             _commerceApi = commerceApi;
         }
-      
 
-        [HttpGet]
+        [HttpGet, Authorize(AuthenticationSchemes = ApiKeyAuthenticationDefaults.AuthenticationScheme)]
         public IActionResult GetProduct()
         {
             IEnumerable<IPublishedContent> productItems = _umbracoHelper.ContentAtRoot()
