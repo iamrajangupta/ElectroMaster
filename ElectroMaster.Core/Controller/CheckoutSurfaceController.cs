@@ -206,8 +206,7 @@ namespace ElectroMaster.Core.Controller
 
                          order.InitializeTransaction();
 
-                        PaymentStatus paymentStatus = PaymentStatus.Authorized;
-
+                        PaymentStatus paymentStatus = PaymentStatus.Authorized;                   
                         order.Finalize(amountAuthorized, transactionId, paymentStatus);
 
                         _commerceApi.SaveOrder(order);
