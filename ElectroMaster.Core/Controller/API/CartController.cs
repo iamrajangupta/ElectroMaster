@@ -52,7 +52,7 @@ namespace ElectroMaster.Core.Controller.API
         }
 
 
-        [HttpDelete]
+        [HttpPut("removeFromCart")]
         public IActionResult RemoveFromCart(RemoveFromCartDto postModel)
         {
             try
