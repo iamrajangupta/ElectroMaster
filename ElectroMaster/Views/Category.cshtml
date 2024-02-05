@@ -16,7 +16,7 @@
                             .ToList();
 
     var store = Model.Value<StoreReadOnly>("store", fallback: Fallback.ToAncestors);
-    bool isProductOutOfStock = false;
+  
 }
 
 <!-- SECTION -->
@@ -68,7 +68,11 @@
                         var price = prices[0].Value;
                         var productReference = item.Key.ToString();
 
-                        if (item.Stock < 1)
+                        bool isProductOutOfStock = false;
+                        decimal decimalValue = Convert.ToDecimal(item.Value("stock").ToString());
+                        int productCount = Convert.ToInt32(decimalValue);
+
+                        if (productCount < 1)
                         {
                             isProductOutOfStock = true;
                         }
