@@ -33,7 +33,7 @@ namespace ElectroMaster.Core.Controller
         }
 
 
-
+        [HttpPost]
         public IActionResult UpdateOrderInformation(UpdateOrderInformationDto model)
         {
             try
@@ -113,6 +113,7 @@ namespace ElectroMaster.Core.Controller
             }
         }
 
+        [HttpPost]
 
         public IActionResult UpdateOrderPaymentMethod(UpdateOrderPaymentMethodDto model)
         {

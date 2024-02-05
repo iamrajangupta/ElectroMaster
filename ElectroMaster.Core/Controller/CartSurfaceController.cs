@@ -19,7 +19,7 @@ namespace ElectroMaster.Core.Controller
     public class CartSurfaceController : SurfaceController
     {
         private readonly IUmbracoCommerceApi _commerceApi;
-
+        private readonly Guid _storeId = new Guid("1f0f0ae0-dcba-4b1c-8584-018cd87f4959");
 
         public CartSurfaceController(IUmbracoContextAccessor umbracoContextAccessor, IUmbracoDatabaseFactory databaseFactory,
             ServiceContext services, AppCaches appCaches, IProfilingLogger profilingLogger, IPublishedUrlProvider publishedUrlProvider,
@@ -67,10 +67,10 @@ namespace ElectroMaster.Core.Controller
 
             try
             {
-                var store = CurrentPage.GetStore();
+               
                 _commerceApi.Uow.Execute(uow =>
                 {
-                    var order = _commerceApi.GetOrCreateCurrentOrder(store.Id)
+                    var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
                         .AsWritable(uow)
                         .RemoveOrderLine(postModel.OrderLineId);
 

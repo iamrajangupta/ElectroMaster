@@ -17,17 +17,23 @@
     var prices = product.Prices.ToList();
     var price = prices[0].Value;
     var productReference = Model.Key.ToString();
- 
+
     int defaultProductCount = 1; // Set default value
 
     var productImage = Model.Value<MediaWithCrops>("image", fallback: Fallback.ToAncestors);
     var productUrl = productImage != null ? productImage.Url() : null;
 
     var Products = Umbraco.ContentAtRoot()
-                       .DescendantsOrSelf<Product>()
-                       .Where(x => x.IsVisible())
-                       .OrderByDescending(x => x.CreateDate) // Assuming there's a CreateDate property
-                       .Take(4);
+                      .DescendantsOrSelf<Product>()
+                      .Where(x => x.IsVisible())
+                      .OrderByDescending(x => x.CreateDate) // Assuming there's a CreateDate property
+                      .Take(4);
+
+    bool isProductOutOfStock = false;
+    decimal decimalValue = Convert.ToDecimal(Model.Value("stock").ToString());
+    int productCount = Convert.ToInt32(decimalValue);
+
+
 }
 
 @{
@@ -43,6 +49,10 @@
     <div class="container">
         <!-- row -->
         <div class="row">
+            @if (productCount < 1)
+            {
+                isProductOutOfStock = true;
+            }
             <!-- Product main img -->
             <div class="col-md-5 col-md-push-2">
                 <div id="product-main-img">
@@ -101,31 +111,46 @@
                     </div>
                     <div>
                         <h3 class="product-price">$@price <del class="product-old-price">$990.00</del></h3>
-                        <span class="product-available">In Stock</span>
+                        @if (isProductOutOfStock)
+                        {
+                            <span class="product-available">Out of Stock</span>
+                        }
+                        else
+                        {
+                            <span class="product-available">In Stock</span>
+                        }
+
                     </div>
                     <p>@Model.Value("productDetail")</p>
 
-
-                    @using (Html.BeginUmbracoForm("AddToCart", "CartSurface"))
+                    @if (isProductOutOfStock)
                     {
-                        @Html.Hidden("productReference", productReference);                       
-                                            
-                        <!-- Set default value -->
-                        <div class="add-to-cart">
-                            <div class="qty-label">
-                                Qty
-                                <div class="input-number">
-                                    <!-- Bind input to ProductCount -->
-                                    <input type="number" name="ProductCount" value="1">
-                                    <span class="qty-up">+</span>
-                                    <span class="qty-down">-</span>
-                                </div>
-                            </div>
-                            <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
+                        <div class="add-to-cart">                          
+                            <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i>Notify Me</button>
                         </div>
                     }
+                    else
+                    {
+                        @using (Html.BeginUmbracoForm("AddToCart", "CartSurface"))
+                        {
+                            @Html.Hidden("productReference", productReference)
+                            ;
 
-
+                            <!-- Set default value -->
+                            <div class="add-to-cart">
+                                <div class="qty-label">
+                                    Qty
+                                    <div class="input-number">
+                                        <!-- Bind input to ProductCount -->
+                                        <input type="number" name="ProductCount" value="1">
+                                        <span class="qty-up">+</span>
+                                        <span class="qty-down">-</span>
+                                    </div>
+                                </div>
+                                <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
+                            </div>
+                        }
+                    }
 
                     <ul class="product-btns">
                         <li><a href="#"><i class="fa fa-heart-o"></i> add to wishlist</a></li>
@@ -371,128 +396,92 @@
         <!-- row -->
         <div class="row">
 
+            <!-- section title -->
             <div class="col-md-12">
-                <div class="section-title text-center">
-                    <h3 class="title">Related Products</h3>
-                </div>
-            </div>
+                <div class="section-title">
+                    <h3 class="title">New Products</h3>
 
-            <!-- product -->
-            <div class="col-md-3 col-xs-6">
-                <div class="product">
-                    <div class="product-img">
-                        <img src="~/img/product01.png" alt="">
-                        <div class="product-label">
-                            <span class="sale">-30%</span>
-                        </div>
-                    </div>
-                    <div class="product-body">
-                        <p class="product-category">Category</p>
-                        <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                        <h4 class="product-price">$980.00 <del class="product-old-price">$990.00</del></h4>
-                        <div class="product-rating">
-                        </div>
-                        <div class="product-btns">
-                            <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
-                            <button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
-                            <button class="quick-view"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
-                        </div>
-                    </div>
-                    <div class="add-to-cart">
-                        <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
-                    </div>
                 </div>
             </div>
-            <!-- /product -->
-            <!-- product -->
-            <div class="col-md-3 col-xs-6">
-                <div class="product">
-                    <div class="product-img">
-                        <img src="~/img/product02.png" alt="">
-                        <div class="product-label">
-                            <span class="new">NEW</span>
-                        </div>
-                    </div>
-                    <div class="product-body">
-                        <p class="product-category">Category</p>
-                        <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                        <h4 class="product-price">$980.00 <del class="product-old-price">$990.00</del></h4>
-                        <div class="product-rating">
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                        </div>
-                        <div class="product-btns">
-                            <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
-                            <button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
-                            <button class="quick-view"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
-                        </div>
-                    </div>
-                    <div class="add-to-cart">
-                        <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
-                    </div>
-                </div>
-            </div>
-            <!-- /product -->
+            <!-- /section title -->
+            <!-- Products tab & slick -->
+            <div class="col-md-12">
+                <div class="row">
+                    <div class="products-tabs">
+                        <!-- tab -->
+                        <div id="tab1" class="tab-pane active">
+                            <div class="products-slick" data-nav="#slick-nav-1">
+                                @foreach (var item in Products)
+                                {                                  
 
-            <div class="clearfix visible-sm visible-xs"></div>
+                                    if (item.Stock < 1)
+                                    {
+                                        isProductOutOfStock = true;
+                                    }
 
-            <!-- product -->
-            <div class="col-md-3 col-xs-6">
-                <div class="product">
-                    <div class="product-img">
-                        <img src="~/img/product03.png" alt="">
-                    </div>
-                    <div class="product-body">
-                        <p class="product-category">Category</p>
-                        <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                        <h4 class="product-price">$980.00 <del class="product-old-price">$990.00</del></h4>
-                        <div class="product-rating">
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star-o"></i>
+                                    <!-- product -->
+                                    <div class="product">
+                                        <a href="@item.Url()">
+                                            <div class="product-img">
+                                                @if (productImage != null)
+                                                {
+                                                    <img src="@productImage.GetCropUrl("productImage")" alt="">
+                                                }
+                                                <div class="product-label">
+                                                    <span class="sale">-30%</span>
+                                                    <span class="new">NEW</span>
+                                                </div>
+                                            </div>
+                                            <div class="product-body">
+                                                <p class="product-category">Category</p>
+                                                <h3 class="product-name"><a href="@item.Url()">@item.Name</a></h3>
+                                                <h4 class="product-price">$@price <del class="product-old-price">$990.00</del></h4>
+                                                <div class="product-rating">
+                                                    <i class="fa fa-star"></i>
+                                                    <i class="fa fa-star"></i>
+                                                    <i class="fa fa-star"></i>
+                                                    <i class="fa fa-star"></i>
+                                                    <i class="fa fa-star"></i>
+                                                </div>
+                                                <div class="product-btns">
+                                                    <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
+                                                    <button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
+                                                    <button class="quick-view"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
+                                                </div>
+                                            </div>
+
+                                            @if (isProductOutOfStock)
+                                            {
+                                                <div class="add-to-cart">
+
+                                                    <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i>out of stock</button>
+
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="add-to-cart">
+                                                    @using (Html.BeginUmbracoForm("AddToCart", "CartSurface"))
+                                                    {
+                                                        @Html.Hidden("productReference", productReference)
+                                                        ;
+                                                        <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
+                                                    }
+                                                </div>
+
+                                            }
+                                        </a>
+                                    </div>
+                                    <!-- /product -->
+                                }
+                            </div>
+                            <div id="slick-nav-1" class="products-slick-nav"></div>
                         </div>
-                        <div class="product-btns">
-                            <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
-                            <button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
-                            <button class="quick-view"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
-                        </div>
-                    </div>
-                    <div class="add-to-cart">
-                        <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
+                        <!-- /tab -->
                     </div>
                 </div>
             </div>
-            <!-- /product -->
-            <!-- product -->
-            <div class="col-md-3 col-xs-6">
-                <div class="product">
-                    <div class="product-img">
-                        <img src="~/img/product04.png" alt="">
-                    </div>
-                    <div class="product-body">
-                        <p class="product-category">Category</p>
-                        <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                        <h4 class="product-price">$980.00 <del class="product-old-price">$990.00</del></h4>
-                        <div class="product-rating">
-                        </div>
-                        <div class="product-btns">
-                            <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
-                            <button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
-                            <button class="quick-view"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
-                        </div>
-                    </div>
-                    <div class="add-to-cart">
-                        <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
-                    </div>
-                </div>
-            </div>
-            <!-- /product -->
-
+            <!-- Products tab & slick -->
         </div>
         <!-- /row -->
     </div>
