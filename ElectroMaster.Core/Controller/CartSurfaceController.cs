@@ -41,13 +41,13 @@ namespace ElectroMaster.Core.Controller
                 _commerceApi.Uow.Execute(uow =>
                 {
 
-                    var order = _commerceApi.GetOrCreateCurrentOrder(store.Id)
-                        .AsWritable(uow)
-                        .AddProduct(postModel.ProductReference, postModel.ProductVariantReference, postModel.ProductCount);
-
-                    _commerceApi.SaveOrder(order);
-
-                    uow.Complete();
+                    var order = _commerceApi.GetOrCreateCurrentOrder(store.Id).AsWritable(uow);
+                    if (order != null)
+                    {
+                        order.AddProduct(postModel.ProductReference, postModel.ProductVariantReference, postModel.ProductCount);
+                        _commerceApi.SaveOrder(order);
+                        uow.Complete();
+                    }
                 });
             }
             catch (ValidationException ex)
@@ -65,7 +65,7 @@ namespace ElectroMaster.Core.Controller
         public IActionResult RemoveFromCart(RemoveFromCartDto postModel)
         {
             try
-            {               
+            {
                 _commerceApi.Uow.Execute(uow =>
                 {
                     var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
