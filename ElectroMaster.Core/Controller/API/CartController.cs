@@ -10,6 +10,7 @@ using electromaster.core.models.system.cart;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Models;
 using ElectroMaster.Core.Models.System.Checkout;
+using Umbraco.Commerce.Core.Models;
 
 namespace ElectroMaster.Core.Controller.API
 {
@@ -157,33 +158,36 @@ namespace ElectroMaster.Core.Controller.API
             return Ok();
         }
 
-     
-        [HttpPost("getMyOrder")]
-        public IActionResult GetMyOrder(GetMyOrder getMyOrder)
+
+
+        [HttpGet("GetOrderbyemail")]
+        public IActionResult GetOrdersByEmail([FromQuery] string email)
         {
-            try
+            if (string.IsNullOrEmpty(email))
             {
-                if (getMyOrder.Email == null)
-                {
-                    return BadRequest("Email cannot be null.");
-                }
+                return BadRequest("Email address is required.");
+            }
 
-                var orders = _commerceApi.Uow.Execute(uow =>
-                {
-                    return _commerceApi.GetAllOrdersForCustomer(_storeId, getMyOrder.Email);
-                });
+            var orders = _commerceApi.GetAllOrdersForCustomer(_storeId, email)
+                            .Where(order => order.IsFinalized)
+                            .OrderByDescending(order => order.FinalizedDate)
+                            .ToList();
 
-                return new JsonResult(orders);
-            }
-            catch (ValidationException ex)
+            if (orders.Count == 0)
             {
-                return BadRequest(ex.Message);
+                return NotFound("No orders found for the provided email address.");
             }
-            catch (Exception ex)
+
+            var orderViewModels = orders.Select(order => new
             {
-                // Handle other exceptions if necessary
-                return StatusCode(500, "An error occurred while processing the request.");
-            }
+                TotalQuantity = Convert.ToInt32(order.TotalQuantity),
+                OrderDate = order.FinalizedDate,
+                OrderPrice = order.TotalPrice.WithoutAdjustments.Formatted().WithTax,
+                Status = _commerceApi.GetOrderStatus(order.OrderStatusId).Name,
+                OrderId = order.Id
+            });
+
+            return Ok(orderViewModels);
         }
 
     }

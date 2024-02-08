@@ -7,6 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 using Umbraco.Cms.Web.Common.Security;
 using Umbraco.Cms.Web.Common.Filters;
 using Umbraco.Cms.Core.Services;
+using ElectroMaster.Core.Models.System.Auth;
+using Microsoft.AspNetCore.Identity;
+using Umbraco.Cms.Core.Models.PublishedContent;
+using Umbraco.Commerce.Core.Api;
 
 namespace ElectroMaster.Core.Controller.API
 {
@@ -16,16 +20,19 @@ namespace ElectroMaster.Core.Controller.API
     {
         private readonly IMemberSignInManager _signInManager;
         private readonly IMemberService _memberService;
-
-
-        public AuthController(IMemberSignInManager signInManager, IMemberService memberService)
+        private readonly IMemberManager _memberManager;
+      
+        private readonly Guid _storeId = new Guid("1f0f0ae0-dcba-4b1c-8584-018cd87f4959");
+        public AuthController(IMemberSignInManager signInManager, IMemberService memberService, IMemberManager memberManager)
         {
             _signInManager = signInManager;
             _memberService = memberService;
+          
+            _memberManager = memberManager;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Login([FromBody] LoginModel model)
+        [HttpPost("memberLogin")]
+        public async Task<IActionResult> Login([FromBody] MemberLoginDto model)
         {
             if (!ModelState.IsValid)
             {
@@ -65,12 +72,40 @@ namespace ElectroMaster.Core.Controller.API
             return Unauthorized("Invalid username or password");
         }
 
-
-        public class LoginModel
+        [HttpGet("memberDetail")]
+        public async Task<IActionResult> GetMemberByEmail([FromQuery] string email)
         {
-            public string Email { get; set; }
-            public string Password { get; set; }
-            public bool RememberMe { get; set; }
-        }
+            if (string.IsNullOrEmpty(email))
+            {
+                return BadRequest("Email address is required.");
+            }
+            var memberEmail = await _memberManager.FindByEmailAsync(email);
+            var memberById = await _memberManager.FindByIdAsync(memberEmail.Id);
+            IPublishedContent member = _memberManager.AsPublishedMember(memberById);
+
+            if (member == null)
+            {
+                return NotFound("Member not found.");
+            }
+
+            var firstName = member.Value<string>("firstName");
+            var lastName = member.Value<string>("lastName");
+            var telephone = member.Value<string>("telephone");
+            var addressLine1 = member.Value<string>("addressLine1");
+            var addressLine2 = member.Value<string>("addressLine2");
+            var zipCode = member.Value<string>("zipCode");
+           
+            var memberDetails = new
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                Telephone = telephone,
+                AddressLine1 = addressLine1,
+                AddressLine2 = addressLine2,
+                ZipCode = zipCode
+            };
+
+            return Ok(memberDetails);
+        }       
     }
 }
