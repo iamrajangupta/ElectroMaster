@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElectroMaster.Core.Models.System.Cart
+namespace ElectroMaster.Core.Models.System.Checkout
 {
-    public class RemoveFromCartDto
+  
+    public class ConfirmOrder
     {
-        public Guid OrderLineId { get; set; }
-
         public Guid OrderId { get; set; } = Guid.Empty;
 
     }

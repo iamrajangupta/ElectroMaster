@@ -1,0 +1,120 @@
+﻿@inherits Umbraco.Cms.Web.Common.Macros.PartialViewMacroPage
+
+@using ElectroMaster.Core.Models.System.Auth
+@using MemorialsGroundsCore.Controller
+@using Microsoft.AspNetCore.Http.Extensions
+@using Umbraco.Cms.Core
+@using Umbraco.Cms.Core.Security
+@using Umbraco.Cms.Web.Website.Controllers
+@using Umbraco.Cms.Web.Website.Models
+@using Umbraco.Extensions
+@inject MemberModelBuilderFactory memberModelBuilderFactory;
+
+@{
+
+    var registerModel = new MemberRegisterDto
+            {
+                MemberTypeAlias = Constants.Conventions.MemberTypes.DefaultAlias,
+                UsernameIsEmail = true,
+            };
+
+    var success = TempData["FormSuccess"] != null;
+}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.11/jquery.validate.unobtrusive.min.js"></script>
+
+@if (success)
+{
+    @* This message will show if registerModel.RedirectUrl is not defined (default) *@
+    <p class="text-success">Registration succeeded.</p>
+}
+else
+{
+    using (Html.BeginUmbracoForm<AuthSurfaceController>(
+            "HandleRegisterMember",
+            new
+            {
+                MemberTypeAlias = registerModel.MemberTypeAlias,
+                UsernameIsEmail = registerModel.UsernameIsEmail,
+                RedirectUrl = registerModel.RedirectUrl,
+            }))
+    {
+
+        <hr />
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="info-table">
+                    <h4 class="centered-heading">Create a new account</h4>
+                    <div class="mb-3">
+                        <label asp-for="@registerModel.FirstName" class="form-label"></label>
+                        <input asp-for="@registerModel.FirstName" class="form-control" aria-required="true" />
+                        <span asp-validation-for="@registerModel.FirstName" class="form-text text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="@registerModel.LastName" class="form-label"></label>
+                        <input asp-for="@registerModel.LastName" class="form-control" aria-required="true" />
+                        <span asp-validation-for="@registerModel.LastName" class="form-text text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="@registerModel.Email" class="form-label"></label>
+                        <input asp-for="@registerModel.Email" class="form-control" autocomplete="username" aria-required="true" />
+                        <span asp-validation-for="@registerModel.Email" class="form-text text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="@registerModel.Password" class="form-label"></label>
+                        <input asp-for="@registerModel.Password" class="form-control" autocomplete="new-password" aria-required="true" />
+                        <span asp-validation-for="@registerModel.Password" class="form-text text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="@registerModel.ConfirmPassword" class="form-label"></label>
+                        <input asp-for="@registerModel.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" />
+                        <span asp-validation-for="@registerModel.ConfirmPassword" class="form-text text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-table">
+                    <h4 class="centered-heading">Add Profile Detail</h4>
+                    <div class="mb-3">
+                        <label asp-for="@registerModel.Telephone" class="form-label"></label>
+                        <input asp-for="@registerModel.Telephone" class="form-control" aria-required="true" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="@registerModel.AddressLine1" class="form-label"></label>
+                        <input asp-for="@registerModel.AddressLine1" class="form-control" aria-required="true" />
+                        <span asp-validation-for="@registerModel.AddressLine1" class="form-text text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="@registerModel.AddressLine2" class="form-label"></label>
+                        <input asp-for="@registerModel.AddressLine2" class="form-control" aria-required="true" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="@registerModel.ZipCode" class="form-label"></label>
+                        <input asp-for="@registerModel.ZipCode" class="form-control" aria-required="true" />
+                    </div>
+                    @if (registerModel.MemberProperties != null)
+                    {
+                        for (var i = 0; i < registerModel.MemberProperties.Count; i++)
+                        {
+                            <div class="mb-3">
+                                @Html.LabelFor(m => registerModel.MemberProperties[i].Value, registerModel.MemberProperties[i].Name)
+                                <input asp-for="@registerModel.MemberProperties[i].Value" class="form-control" />
+                                @Html.HiddenFor(m => registerModel.MemberProperties[i].Alias)
+                                <span asp-validation-for="@registerModel.MemberProperties[i].Value" class="form-text text-danger"></span>
+                            </div>
+                        }
+                    }
+
+                    <button type="submit" class="btn btn-primary">Register</button>
+                </div>
+            </div>
+        </div>
+    }
+}

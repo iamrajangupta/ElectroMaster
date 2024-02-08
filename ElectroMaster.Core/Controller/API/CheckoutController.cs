@@ -7,8 +7,7 @@ using ElectroMaster.Core.Models.System.Checkout;
 using Umbraco.Commerce.Core;
 using Umbraco.Commerce.Core.Models;
 using Umbraco.Commerce.Core.Services;
-using static Lucene.Net.Documents.Field;
-using Umbraco.Commerce.Core.Specifications.Order;
+using Umbraco.Commerce.Extensions;
 
 
 namespace ElectroMaster.Core.Controller.API
@@ -18,18 +17,14 @@ namespace ElectroMaster.Core.Controller.API
     public class CheckoutController : UmbracoApiController
     {
         private readonly IUmbracoCommerceApi _commerceApi;
-        private readonly IPaymentService _paymentService;
-        private readonly Guid _storeId = new Guid("1f0f0ae0-dcba-4b1c-8584-018cd87f4959");
         public CheckoutController(UmbracoHelper umbracoHelper, ServiceContext services, IUmbracoCommerceApi commerceApi, IPaymentService paymentService)
         {
-            _commerceApi = commerceApi;
-
-            _paymentService = paymentService;
+             _commerceApi = commerceApi;        
         }
 
         Order updatedOrder = null;
 
-        [HttpPost("updateinfromation")]
+        [HttpPost("updateInformation")]
         public IActionResult UpdateOrderInformation(UpdateOrderInformationDto model)
         {
             try
@@ -37,8 +32,11 @@ namespace ElectroMaster.Core.Controller.API
 
                 _commerceApi.Uow.Execute(uow =>
                 {
-                    var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
-                        .AsWritable(uow)
+                    model.BillingAddress.Country = new Guid("5ec6dc87-7b28-4abf-b0c0-018cd87f4a68");
+                    model.ShippingAddress.Country = new Guid("5ec6dc87-7b28-4abf-b0c0-018cd87f4a68");
+
+                    var order = _commerceApi.GetOrder(model.OrderId)
+                       .AsWritable(uow)
                         .SetProperties(new Dictionary<string, string>
                         {
                             { Constants.Properties.Customer.EmailPropertyAlias, model.Email },
@@ -65,6 +63,7 @@ namespace ElectroMaster.Core.Controller.API
                         .SetPaymentCountryRegion(model.BillingAddress.Country, null)
                         .SetShippingCountryRegion(model.ShippingSameAsBilling ? model.BillingAddress.Country : model.ShippingAddress.Country, null);
 
+
                     _commerceApi.SaveOrder(order);
 
                     uow.Complete();
@@ -78,42 +77,28 @@ namespace ElectroMaster.Core.Controller.API
             return Ok();
         }
 
-        [HttpGet("shippingmethods")]
-        public IActionResult GetShippingMethods()
-        {
-            try
-            {
-                var shippingMethods = _commerceApi.GetShippingMethods(_storeId);
 
-                if (shippingMethods != null && shippingMethods.Any())
-                {
-                    return Ok(shippingMethods);
-                }
-                else
-                {
-                    return NotFound("No shipping methods found for the specified store.");
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-
-        }
-
-        [HttpPost("shippingmethods")]
-        public IActionResult UpdateOrderShippingMethod(UpdateOrderShippingMethodDto model)
+        [HttpPost("confirmOrder")]
+        public IActionResult ConfirmOrder(ConfirmOrder model)
         {
             try
             {
                 _commerceApi.Uow.Execute(uow =>
                 {
-                    var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
-                        .AsWritable(uow)
-                        .SetShippingMethod(model.ShippingMethod);
+                    var paymentMethod = new Guid("9559a36d-d7cf-45e7-99ed-018cd87f4ce8");
+                    var shippingMethod = new Guid("f3a27666-021a-48fe-90ed-018cd87f4de3");
+                    var status = new Guid("580181af-ad08-410f-b277-018cd87f4b7e");
 
+
+                    var order = _commerceApi.GetOrder(model.OrderId)
+                                            .AsWritable(uow)
+                                            .SetPaymentMethod(paymentMethod)
+                                            .SetShippingMethod(shippingMethod); 
+                                            
+                    order.InitializeTransaction();
+                    order.Finalize(order.TotalPrice, Guid.NewGuid().ToString("N"), PaymentStatus.Authorized);                 
+                    order.SetOrderStatus(status);
                     _commerceApi.SaveOrder(order);
-                    updatedOrder = order;
                     uow.Complete();
                 });
 
@@ -125,84 +110,5 @@ namespace ElectroMaster.Core.Controller.API
 
             return Ok(updatedOrder);
         }
-
-
-        [HttpGet("paymentmethods")]
-        public IActionResult GetPaymentMethods()
-        {
-            try
-            {
-                
-                var paymentMethods = _commerceApi.GetPaymentMethods(_storeId);
-
-                if (paymentMethods != null && paymentMethods.Any())
-                {
-                    return Ok(paymentMethods);
-                }
-                else
-                {
-                    return NotFound("No payment methods found for the specified store.");
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPost("paymentmethods")]
-
-        public IActionResult UpdateOrderPaymentMethod(UpdateOrderPaymentMethodDto model)
-        {
-            try
-            {     
-                
-                _commerceApi.Uow.Execute(uow =>
-                {
-                    var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
-                        .AsWritable(uow)
-                        
-                        .SetPaymentMethod(model.PaymentMethod);
-
-                    _commerceApi.SaveOrder(order);
-
-                    updatedOrder = order;
-
-                    uow.Complete();
-                });
-
-                return Ok(updatedOrder); 
-            }
-            catch (System.ComponentModel.DataAnnotations.ValidationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpGet("capture")]
-
-        public async Task<IActionResult> CapturePayment()
-        {
-            try
-            {
-                var currentOrder = CommerceApi.Instance.GetCurrentOrder(_storeId);
-
-                var cc = currentOrder.OrderStatusCode.ToString();
-                var dd = currentOrder.OrderStatusId.ToString();
-
-                // Override IsFinalized property
-                
-
-                // Further processing or capturing payment logic goes here...
-
-                return Ok(new { Message = "Payment captured successfully." });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { Message = $"An error occurred during payment capture: {ex.Message}" });
-            }
-        }
-
-
     }
 }

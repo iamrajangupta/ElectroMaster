@@ -1,16 +1,79 @@
 ﻿@using Umbraco.Cms.Web.Common.PublishedModels;
-@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.ReviewOrder>
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.MyOrder>
 @using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
 @using Umbraco.Commerce.Core.Api
-@using Umbraco.Commerce.Core.Models
 @using Umbraco.Commerce.Extensions
 @{
-    Layout = "Master.cshtml";
+	Layout = "Master.cshtml";
 
-    var store = Model.Value<StoreReadOnly>("store", fallback: Fallback.ToAncestors);
-    var Order = CommerceApi.Instance.GetCurrentOrder(store.Id);
   
 }
+@{
+    var orderId = TempData["addOrderId"] as Guid?;
+    var Order = orderId != null ? CommerceApi.Instance.GetOrder(orderId.Value) : null;
+}
+
+<div class="section">
+    <div class="container">
+        <div class="col-12 order-details">
+            <div class="section-title text-center">
+                <h3 class="title">Your Order</h3>
+            </div>
+
+            @if (Order != null && Order.OrderLines != null && Order.OrderLines.Any())
+            {
+                <div class="cart-table-responsive">
+                    <table class="table cart-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Price (Excl. Tax)</th>
+                                <th>Tax</th>
+                                <th>Unit Price</th>
+                                <th>Quantity</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Order.OrderLines)
+                            {
+                                int quantity = Convert.ToInt32(item.Quantity);
+                                <tr>
+                                    <td class="product-cell">
+                                        <div class="product-info">
+                                            <img src="~/img/product05.png" alt="@item.Name" class="product-image-small" />
+                                            <div class="product-details">
+                                                <h4 class="product-name">@item.Name</h4>
+                                                <p class="product-sku">SKU: @item.Sku</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>@item.UnitPrice.Base.WithoutTax.ToString("0.00")</td>
+                                    <td>@item.UnitPrice.Base.Tax.ToString("0.00")</td>
+                                    <td>@item.UnitPrice.WithoutAdjustments.Formatted()</td>
+                                    <td>
+                                        <p class="product-sku">@quantity</p>
+                                    </td>
+                                    <td>@item.TotalPrice.WithoutAdjustments.Formatted()</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="5"><strong>Subtotal</strong></td>
+                                <td class="checkoutsutoatal"><strong class="order-total">@Order.TotalPrice.WithoutAdjustments.Formatted()</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p>No order found.</p>
+            }
+        </div>
+    </div>
+</div>
 
 @if (Order != null)
 {
@@ -21,9 +84,7 @@
                     <h3 class="text-xl font-medium mb-4 mt-8">Contact Information</h3>
 
                     <!-- Contact Information -->
-                    <p>
-                        <strong>Email :</strong> @Order.CustomerInfo.Email
-                    </p>
+                    <p><strong>Email :</strong> @Order.CustomerInfo.Email</p>
 
                     <div class="row">
                         <!-- Billing Information -->
@@ -36,7 +97,6 @@
                                         <td>@Order.CustomerInfo.FirstName @Order.CustomerInfo.LastName</td>
                                     </tr>
                                     <tr>
-                                       
                                         <td><strong>Address :</strong></td>
                                         <td>
                                             @{
@@ -84,39 +144,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="text-center">
-                        @using (Html.BeginUmbracoForm("CreateCheckoutSession", "CheckoutSurface"))
-                        {
-                            var priceString = Order.TotalPrice.WithoutAdjustments.Formatted().ToString();
-                            var cleanedPriceString = priceString.Replace("£", "").Replace(",", "");
-
-                            if (Decimal.TryParse(cleanedPriceString, out decimal decimalPrice))
-                            {
-                                var orderNo = Order.CartNumber;
-                                var orderId = Order.Id;
-
-                                @Html.Hidden("amount", decimalPrice)
-                                @Html.Hidden("orderId", orderId)
-                                @Html.Hidden("productName", orderNo)
-                                @Html.Hidden("quantity", 1)
-
-                                <button class="primary-btn" type="submit">Continue to Payment</button>
-                            }
-                        }
-                     @*    @using (await Html.BeginPaymentFormAsync(Order))
-                        {
-                            <button class="primary-btn" type="submit">Continue to Payment</button>
-                        } *@
-                    </div>
                 </div>
             </div>
         </div>
     </div>
-
 }
-else
-{
-    <h4>You have no order in cart</h4>
-}
-
-

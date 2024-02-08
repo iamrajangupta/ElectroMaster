@@ -11,12 +11,16 @@
     // You can modify this to redirect to a different URL instead of the current one
     logoutModel.RedirectUrl = null;
 }
-
 @if (isLoggedIn)
 {
     <div class="login-status">
 
-        <p>Welcome back <strong>@Context?.User?.Identity?.Name</strong>!</p>
+        <p>
+            <strong>Welcome back, @Context?.User?.Identity?.Name!</strong>
+            <span class="additional-content">
+                <i class="fa fa-check-circle"></i> You are currently logged in.
+            </span>
+        </p>
 
         @using (Html.BeginUmbracoForm<UmbLoginStatusController>("HandleLogout", new { RedirectUrl = logoutModel.RedirectUrl }))
         {

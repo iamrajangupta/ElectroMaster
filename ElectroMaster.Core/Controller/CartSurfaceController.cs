@@ -1,5 +1,4 @@
 ﻿using ElectroMaster.Core.Extensions;
-using ElectroMaster.Core.Models.System;
 using ElectroMaster.Core.Models.System.Cart;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
@@ -9,7 +8,6 @@ using Umbraco.Cms.Core.Routing;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Cms.Infrastructure.Persistence;
-using Umbraco.Cms.Web.Common.PublishedModels;
 using Umbraco.Cms.Web.Website.Controllers;
 using Umbraco.Commerce.Core.Api;
 using Umbraco.Commerce.Extensions;
@@ -21,7 +19,7 @@ namespace ElectroMaster.Core.Controller
     public class CartSurfaceController : SurfaceController
     {
         private readonly IUmbracoCommerceApi _commerceApi;
-
+        private readonly Guid _storeId = new Guid("1f0f0ae0-dcba-4b1c-8584-018cd87f4959");
 
         public CartSurfaceController(IUmbracoContextAccessor umbracoContextAccessor, IUmbracoDatabaseFactory databaseFactory,
             ServiceContext services, AppCaches appCaches, IProfilingLogger profilingLogger, IPublishedUrlProvider publishedUrlProvider,
@@ -66,13 +64,11 @@ namespace ElectroMaster.Core.Controller
         [HttpPost]
         public IActionResult RemoveFromCart(RemoveFromCartDto postModel)
         {
-
             try
-            {
-                var storeId = new Guid("1f0f0ae0-dcba-4b1c-8584-018cd87f4959");
+            {               
                 _commerceApi.Uow.Execute(uow =>
                 {
-                    var order = _commerceApi.GetOrCreateCurrentOrder(storeId)
+                    var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
                         .AsWritable(uow)
                         .RemoveOrderLine(postModel.OrderLineId);
 
@@ -94,6 +90,4 @@ namespace ElectroMaster.Core.Controller
         }
 
     }
-
-
 }

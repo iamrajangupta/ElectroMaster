@@ -2,8 +2,40 @@
 @inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.MyAccount>
 @using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
 @{
-	Layout = "Master.cshtml";
+    Layout = "Master.cshtml";
 }
 
-@await Umbraco.RenderMacroAsync("Login")
-@await Umbraco.RenderMacroAsync("LoginStatus")
+<div class="section">
+    <div class="container">
+        <div class="col-12 order-details">
+            <div class="section-title text-center">
+                <h3 class="text-xl font-medium mb-4 mt-8">My Account</h3>
+                <div class="tabs">
+                    <button class="tablinks active" onclick="openTab(event, 'signin')">Sign In</button>
+                    <button class="tablinks" onclick="openTab(event, 'signup')">Sign Up</button>
+                </div>
+
+                <div id="signin" class="tabcontent" style="display:block;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-table">
+                                <h4 class="centered-heading">Login</h4>
+                                @await Umbraco.RenderMacroAsync("Login")
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-table">                                  
+                                @await Umbraco.RenderMacroAsync("LoginStatus")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="signup" class="tabcontent" style="display:none;">
+                   @await Umbraco.RenderMacroAsync("RegisterMember")
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

@@ -6,13 +6,15 @@ using Umbraco.Cms.Core.Routing;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Cms.Infrastructure.Persistence;
-using Umbraco.Cms.Web.Common.PublishedModels;
 using Umbraco.Cms.Web.Website.Controllers;
 using Umbraco.Commerce.Core.Api;
 using Umbraco.Commerce.Core;
 using ElectroMaster.Core.Extensions;
 using Stripe.Checkout;
 using Stripe;
+using Umbraco.Commerce.Core.Models;
+using System.Globalization;
+using Umbraco.Commerce.Extensions;
 
 
 namespace ElectroMaster.Core.Controller
@@ -20,6 +22,7 @@ namespace ElectroMaster.Core.Controller
     public class CheckoutSurfaceController : SurfaceController
     {
         private readonly IUmbracoCommerceApi _commerceApi;
+        private readonly string _stripeSecretKey = "sk_test_51NN9SASCduWSbaBPQNIs7V75kRLkaLOnIQEWGBXpYv7b8yc64Yz8ljMx6fZ8tFjQCkuAV69sNWDYfbDbmkgMFLVS00FCtszGCz";
 
         public CheckoutSurfaceController(IUmbracoContextAccessor umbracoContextAccessor, IUmbracoDatabaseFactory databaseFactory,
             ServiceContext services, AppCaches appCaches, IProfilingLogger profilingLogger, IPublishedUrlProvider publishedUrlProvider,
@@ -30,7 +33,7 @@ namespace ElectroMaster.Core.Controller
         }
 
 
-
+        [HttpPost]
         public IActionResult UpdateOrderInformation(UpdateOrderInformationDto model)
         {
             try
@@ -110,6 +113,7 @@ namespace ElectroMaster.Core.Controller
             }
         }
 
+        [HttpPost]
 
         public IActionResult UpdateOrderPaymentMethod(UpdateOrderPaymentMethodDto model)
         {
@@ -138,40 +142,95 @@ namespace ElectroMaster.Core.Controller
 
         }
 
-        public IActionResult CreateCheckoutSession(string secretKey, decimal amount, string successUrl, string cancelUrl, string currency, string productName, int quantity)
+        [HttpPost]
+        public IActionResult CreateCheckoutSession(decimal amount, string productName, string orderId, int quantity)
         {
-            var options = new SessionCreateOptions
+            try
             {
-                LineItems = new List<SessionLineItemOptions>
+                var options = new SessionCreateOptions
                 {
-                    new SessionLineItemOptions
+                    LineItems = new List<SessionLineItemOptions>
                     {
-                        PriceData = new SessionLineItemPriceDataOptions
+                        new SessionLineItemOptions
                         {
-                            UnitAmount = (long)(amount * 100), // Amount in cents
-                            Currency = currency,
-                            ProductData = new SessionLineItemPriceDataProductDataOptions
+                            PriceData = new SessionLineItemPriceDataOptions
                             {
-                                Name = productName,
+                                UnitAmount = (long)(amount * 100),
+                                Currency = "GBP",
+                                ProductData = new SessionLineItemPriceDataProductDataOptions
+                                {
+                                    Name = productName,
+                                },
                             },
+                            Quantity = quantity,
                         },
-                        Quantity = quantity,
                     },
-                },
-                PaymentMethodTypes = new List<string> { "card" },
-                Mode = "payment",
-                SuccessUrl = successUrl,
-                CancelUrl = cancelUrl,
-            };
+                    PaymentMethodTypes = new List<string> { "card" },
+                    Mode = "payment",
+                    SuccessUrl = $"{Request.Scheme}://{Request.Host}/cart/success?session_id={{CHECKOUT_SESSION_ID}}&orderId={orderId}",
+                    CancelUrl = $"{Request.Scheme}://{Request.Host}/cart/",
+                };
 
-            StripeConfiguration.ApiKey = secretKey;
+                StripeConfiguration.ApiKey = _stripeSecretKey;
+                var service = new SessionService();
+                var session = service.Create(options);
 
-            var service = new SessionService();
-            var session = service.Create(options);
-
-            // Redirect the user to the payment page
-            return Redirect(session.Url);
+                return Redirect(session.Url);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { ErrorMessage = "An error occurred", ErrorDetails = ex.Message });
+            }
         }
 
+
+        [HttpGet("/cart/success")]
+        public IActionResult PaymentSuccess([FromQuery] string session_id, [FromQuery] string orderId)
+        {
+            try
+            {
+                StripeConfiguration.ApiKey = _stripeSecretKey;
+                var service = new SessionService();
+                var session = service.Get(session_id);
+
+                if (session.PaymentStatus == "paid")
+                {
+                    string transactionId = session.PaymentIntentId;
+                    decimal amountAuthorized = (decimal)session.AmountTotal / 100;
+
+                    _commerceApi.Uow.Execute(uow =>
+                    {
+                        Guid orderIdGuid = new Guid(orderId);
+
+                        var order = _commerceApi.GetOrder(orderIdGuid)
+                            .AsWritable(uow);
+
+                         order.InitializeTransaction();
+
+                        PaymentStatus paymentStatus = PaymentStatus.Authorized;                   
+                        order.Finalize(amountAuthorized, transactionId, paymentStatus);
+
+                        _commerceApi.SaveOrder(order);
+
+                        uow.Complete();
+                    });
+
+                    string returnUrl = "/order-confirmation/";
+                    return Redirect(returnUrl);
+                }
+                else
+                {
+                    return BadRequest(new { ErrorMessage = "Payment not successful", ErrorDetails = session.PaymentStatus });
+                }
+            }
+            catch (System.ComponentModel.DataAnnotations.ValidationException ex)
+            {
+                return BadRequest(new { ErrorMessage = "Failed to set order payment method", ErrorDetails = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { ErrorMessage = "An error occurred", ErrorDetails = ex.Message });
+            }
+        }
     }
 }

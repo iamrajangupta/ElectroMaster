@@ -1,20 +1,11 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
-
-//namespace ElectroMaster.Core.Models.System.Cart
-//{
-//    public class UpdateCartDto
-//    {
-//        public OrderLineQuantityDto[] OrderLines { get; set; }
-//    }
-
-//    public class OrderLineQuantityDto
-//    {
-//        public Guid Id { get; set; }
-
-//        public decimal Quantity { get; set; }
-//    }
-//}
+﻿namespace electromaster.core.models.system.cart
+{
+    public class UpdateCartDto
+    {
+        public Guid OrderId { get; set; } = Guid.Empty;
+        public string ProductReference { get; set; }
+        public string? ProductVariantReference { get; set; } = null;
+        public string ProductName { get; set; }
+        public int ProductCount { get; set; }
+    }
+}

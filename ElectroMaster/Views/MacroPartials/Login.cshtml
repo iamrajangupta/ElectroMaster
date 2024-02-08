@@ -50,7 +50,6 @@ else
     @using (Html.BeginUmbracoForm<UmbLoginController>(
         "HandleLogin", new { RedirectUrl = loginModel.RedirectUrl })) {
 
-            <h4>Log in with a local account.</h4>
             <hr />
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="mb-3">

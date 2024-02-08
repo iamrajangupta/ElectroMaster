@@ -110,6 +110,7 @@ namespace ElectroMaster.Core.Controller.API
 
 
         }
+
         private decimal? GetProductPrice(IPublishedContent productItem)
         {
             var pricePropertyValue = productItem.Value<PricePropertyValue>("price").ToList();

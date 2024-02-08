@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 
 namespace ElectroMaster.Core.Models.System.Checkout
 {
-    public class UpdateOrderPaymentMethodDto
+    public class GetMyOrder
     {
-        public Guid PaymentMethod { get; set; }
-
-        public Guid OrderId { get; set; } = Guid.Empty;
+        public string Email { get; set; }
 
     }
 }

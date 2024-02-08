@@ -6,6 +6,10 @@ using Umbraco.Commerce.Core.Api;
 using Umbraco.Commerce.Extensions;
 using System.ComponentModel.DataAnnotations;
 using ElectroMaster.Core.Models.System.Cart;
+using electromaster.core.models.system.cart;
+using Umbraco.Cms.Core.Models.PublishedContent;
+using Umbraco.Cms.Core.Models;
+using ElectroMaster.Core.Models.System.Checkout;
 
 namespace ElectroMaster.Core.Controller.API
 {
@@ -13,7 +17,8 @@ namespace ElectroMaster.Core.Controller.API
     [Route("api/cart")]
     public class CartController : UmbracoApiController
     {
-        private readonly IUmbracoCommerceApi _commerceApi;    
+
+        private readonly IUmbracoCommerceApi _commerceApi;
         private readonly Guid _storeId = new Guid("1f0f0ae0-dcba-4b1c-8584-018cd87f4959");
         public CartController(UmbracoHelper umbracoHelper, ServiceContext services, IUmbracoCommerceApi commerceApi)
         {
@@ -23,11 +28,10 @@ namespace ElectroMaster.Core.Controller.API
         [HttpPost]
         public IActionResult AddToCart(AddToCartDto postModel)
         {
-           
             postModel.ProductCount = postModel.ProductCount <= 0 ? 1 : postModel.ProductCount;
-          
             try
             {
+                Guid orderId = Guid.Empty; // Initialize with an empty Guid
                 _commerceApi.Uow.Execute(uow =>
                 {
                     var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
@@ -35,28 +39,37 @@ namespace ElectroMaster.Core.Controller.API
                         .AddProduct(postModel.ProductReference, postModel.ProductVariantReference, postModel.ProductCount);
 
                     _commerceApi.SaveOrder(order);
+                    orderId = order.Id;
 
                     uow.Complete();
                 });
+                return Ok(new { OrderId = orderId });
             }
             catch (ValidationException ex)
             {
-
+                return BadRequest("Validation failed");
             }
-            return Ok();
         }
 
-        [HttpDelete]
+
+        [HttpPut("removeFromCart")]
         public IActionResult RemoveFromCart(RemoveFromCartDto postModel)
         {
             try
             {
+
+                if (postModel == null)
+                {
+                    return BadRequest("RemoveFromCartDto cannot be null.");
+                }
+
                 _commerceApi.Uow.Execute(uow =>
                 {
-                   
-                    var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
-                        .AsWritable(uow)
-                        .RemoveOrderLine(postModel.OrderLineId);
+                    var orders = _commerceApi.GetOrder(postModel.OrderId);
+
+                    var order = orders
+                       .AsWritable(uow)
+                       .RemoveOrderLine(postModel.OrderLineId);
 
                     _commerceApi.SaveOrder(order);
 
@@ -65,18 +78,23 @@ namespace ElectroMaster.Core.Controller.API
             }
             catch (ValidationException ex)
             {
-              return BadRequest(ex.Message);
-            }         
+                return BadRequest(ex.Message);
+            }
             return Ok();
         }
-           
+
         [HttpGet]
-        public IActionResult GetOrders()
+        public IActionResult GetOrders(Guid OrderId)
         {
             try
             {
-                
-                var order = _commerceApi.GetOrCreateCurrentOrder(_storeId);               
+                var order = _commerceApi.GetOrder(OrderId);
+
+                if (order == null)
+                {
+                    return NotFound("Order not found");
+                }
+
                 var orderLines = new List<OrderLineDto>();
 
                 foreach (var item in order.OrderLines)
@@ -85,13 +103,12 @@ namespace ElectroMaster.Core.Controller.API
                     {
                         OrderLineId = item.Id,
                         ProductReference = item.ProductReference,
-                        Name = item.Name,                  
+                        Name = item.Name,
                         PriceExclTax = item.UnitPrice.Base.WithoutTax,
                         Tax = item.UnitPrice.Base.Tax,
                         UnitPrice = item.UnitPrice.WithoutAdjustments,
                         Quantity = (int)item.Quantity,
                         Total = item.TotalPrice.WithoutAdjustments,
-                      
                     };
 
                     orderLines.Add(orderLineModel);
@@ -102,6 +119,7 @@ namespace ElectroMaster.Core.Controller.API
 
                 return Ok(new
                 {
+                    OrderID = OrderId,
                     OrderLines = orderLines,
                     SubTotal = subTotal,
                 });
@@ -109,6 +127,62 @@ namespace ElectroMaster.Core.Controller.API
             catch (ValidationException ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut]
+        public IActionResult AddItemToOrder(UpdateCartDto postModel)
+        {
+            try
+            {
+                if (postModel.OrderId == null)
+                {
+                    return BadRequest("Order ID cannot be null.");
+                }
+                _commerceApi.Uow.Execute(uow =>
+                {
+                    var order = _commerceApi.GetOrder(postModel.OrderId)
+                        .AsWritable(uow)
+                        .AddProduct(postModel.ProductReference, postModel.ProductVariantReference, postModel.ProductCount);
+
+                    _commerceApi.SaveOrder(order);
+
+                    uow.Complete();
+                });
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            return Ok();
+        }
+
+     
+        [HttpPost("getMyOrder")]
+        public IActionResult GetMyOrder(GetMyOrder getMyOrder)
+        {
+            try
+            {
+                if (getMyOrder.Email == null)
+                {
+                    return BadRequest("Email cannot be null.");
+                }
+
+                var orders = _commerceApi.Uow.Execute(uow =>
+                {
+                    return _commerceApi.GetAllOrdersForCustomer(_storeId, getMyOrder.Email);
+                });
+
+                return new JsonResult(orders);
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                // Handle other exceptions if necessary
+                return StatusCode(500, "An error occurred while processing the request.");
             }
         }
 

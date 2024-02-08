@@ -2321,3 +2321,70 @@ textarea.input {
 .order-btn {
     margin: 0px 0 70px;
 }
+
+.tabcontent {
+    display: none;
+}
+
+/* Style the tab buttons */
+.tablinks {
+    background-color: #f2f2f2;
+    border: none;
+    cursor: pointer;
+    padding: 10px 20px;
+    margin: 0 5px;
+}
+
+/* Style the tab content */
+.tabcontent {
+    padding: 20px;
+    border-top: none;
+}
+/*
+my order css*/
+/*.info-table {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 8px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #f2f2f2;
+}*/
+
+.status-btn {
+    border: none;
+    border-radius: 20px;
+    padding: 5px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    color: white;
+}
+
+.view-more-icon {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+}
+
+.center {
+    text-align: center;
+}
+.clickable-row:hover {
+    background-color: #f5f5f5; /* Light gray background color */
+}
+
+.additional-content {
+    display: inline-block; /* Ensures the additional content aligns horizontally with the text */
+    margin-left: 10px; /* Adjust as needed to provide spacing between the text and additional content */
+}

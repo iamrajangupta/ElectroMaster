@@ -16,6 +16,8 @@
                             .ToList();
 
     var store = Model.Value<StoreReadOnly>("store", fallback: Fallback.ToAncestors);
+    bool isLoggedIn = Context.User?.Identity?.IsAuthenticated ?? false;
+  
 }
 
 <!-- SECTION -->
@@ -67,6 +69,15 @@
                         var price = prices[0].Value;
                         var productReference = item.Key.ToString();
 
+                        bool isProductOutOfStock = false;
+                        decimal decimalValue = Convert.ToDecimal(item.Value("stock").ToString());
+                        int productCount = Convert.ToInt32(decimalValue);
+
+                        if (productCount < 1)
+                        {
+                            isProductOutOfStock = true;
+                        }
+
                         if (filteredProducts.Any())
                         {
                             <!-- product -->
@@ -91,13 +102,37 @@
                                                 <button class="quick-view"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
                                             </div>
                                         </div>
-                                        <div class="add-to-cart">
-                                            @using (Html.BeginUmbracoForm("AddToCart", "CartSurface"))
+                                        @if (isLoggedIn)
+                                        {
+                                            @if (isProductOutOfStock)
                                             {
-                                                @Html.Hidden("productReference", productReference);                                               
-                                                <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
+                                                <div class="add-to-cart">
+
+                                                    <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i>out of stock</button>
+
+                                                </div>
                                             }
-                                        </div>
+                                            else
+                                            {
+                                                <div class="add-to-cart">
+                                                    @using (Html.BeginUmbracoForm("AddToCart", "CartSurface"))
+                                                    {
+                                                        @Html.Hidden("productReference", productReference)
+                                                        ;
+                                                        <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
+                                                    }
+                                                </div>
+
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <div class="add-to-cart">
+                                                <button class="add-to-cart-btn" onclick="window.location.href='/my-account/';">
+                                                    <i class="fa fa-shopping-cart"></i> add to cart
+                                                </button>
+                                            </div>
+                                        }
                                     </div>
                                 </div>
                             </a>

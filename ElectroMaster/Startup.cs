@@ -1,5 +1,4 @@
 using Umbraco.Commerce.Extensions;
-
 namespace ElectroMaster
 {
     public class Startup
@@ -26,6 +25,7 @@ namespace ElectroMaster
                 });
             });
 
+          
             // Add MVC
             services.AddControllers();
 
@@ -65,7 +65,7 @@ namespace ElectroMaster
                     c.SwaggerEndpoint("/swagger/default/swagger.json", "Default API");
                 }
             });
-
+        
             // Use Umbraco middleware and configure endpoints
             app.UseUmbraco()
                 .WithMiddleware(u =>

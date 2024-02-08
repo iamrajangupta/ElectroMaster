@@ -1,0 +1,90 @@
+﻿@using Umbraco.Cms.Core.Security
+@using Umbraco.Cms.Web.Common.PublishedModels;
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.MyOrders>
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
+@using Umbraco.Cms.Web.Common.Security
+@using Umbraco.Commerce.Core.Api
+@using Umbraco.Commerce.Core.Models
+@inject IMemberManager membermanager
+
+@{
+    Layout = "Master.cshtml";
+    var store = Model.Value<StoreReadOnly>("store", fallback: Fallback.ToAncestors);
+
+
+    bool isLoggedIn = false;
+    var currUserEmail = "test@123.com";
+    isLoggedIn = Context.User?.Identity?.IsAuthenticated ?? false;
+
+    if (isLoggedIn)
+    {
+        var currUser = membermanager.GetCurrentMemberAsync().Result;
+        currUserEmail = currUser.Email;
+    }
+    else
+    {
+        isLoggedIn = false;
+    }
+    var myOrder = CommerceApi.Instance.GetAllOrdersForCustomer(store.Id, currUserEmail)
+                                      .OrderByDescending(order => order.FinalizedDate)
+                                      .ToList();
+}
+
+<div class="section">
+    <div class="container">
+        <div class="col-12 order-details">
+            <div class="section-title text-center">
+                <h3 class="text-xl font-medium mb-4 mt-8">My Orders</h3>
+                <div class="row">
+                    <div class="col-md-12">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th class="center">Order Number</th>
+                                    <th class="center">Total Quantity</th>
+                                    <th class="center">Order Date</th>
+                                    <th class="center">Status</th>
+                                    <th class="center"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (myOrder != null && myOrder.Any())
+                                {
+                                    @foreach (var order in myOrder)
+                                    {
+                                        var statuscode = CommerceApi.Instance.GetOrderStatus(order.OrderStatusId).Name;
+                                        var statusColor = CommerceApi.Instance.GetOrderStatus(order.OrderStatusId).Color;
+                                        int totalQuantity = Convert.ToInt32(order.TotalQuantity);
+                                        <tr>
+                                            <td class="center">@order.OrderNumber</td>
+                                            <td class="center">@totalQuantity</td>
+                                            <td class="center">@order.FinalizedDate</td>
+                                            <td class="center">
+                                                <div class="status-btn">
+                                                    <button class="status-btn" style="background-color: @statusColor;">@statuscode</button>
+                                                </div>
+                                            </td>
+                                            @using (Html.BeginUmbracoForm("MyOrder", "OrderSurface"))
+                                            {
+                                                @Html.Hidden("orderId", order.Id)
+                                                <td class="center">
+                                                    <button class="btn btn-primary" type="submit">View Details</button>
+                                                </td>
+                                            }
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="center">No orders found.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
