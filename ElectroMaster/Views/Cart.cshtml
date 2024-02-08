@@ -14,7 +14,9 @@
     Layout = "Master.cshtml";
     var store = Model.Value<StoreReadOnly>("store", fallback: Fallback.ToAncestors);
     var Order = CommerceApi.Instance.GetCurrentOrder(store.Id);
-    var myOrder = CommerceApi.Instance.GetAllOrdersForCustomer(store.Id, "jbladministrator@kayodigital.com");
+
+    bool isLoggedIn = Context.User?.Identity?.IsAuthenticated ?? false;
+
 }
 
 <div class="section">
@@ -23,79 +25,87 @@
             <div class="section-title text-center">
                 <h3 class="title">Your Cart</h3>
             </div>
-
-            @if (Order != null && Order.OrderLines != null && Order.OrderLines.Any())
+            @if (isLoggedIn)
             {
-                <form method="post" action="/CartSurface/UpdateCart">
-                    <div class="cart-table-responsive">
-                        <table class="table cart-table">
-                            <thead>
-                                <tr>
-                                    <th>Product</th>
-                                    <th>Price (Excl. Tax)</th>
-                                    <th>Tax</th>
-                                    <th>Unit Price</th>
-                                    <th>Quantity</th>
-                                    <th>Total</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in Order.OrderLines)
-                                {
-                                    int quantity = (int)item.Quantity;
-                                    <tr>                                     
-                                        <td class="product-cell">
-                                            <div class="product-info">
-                                                <img src="~/img/product05.png" alt="@item.Name" class="product-image-small" />
-                                                <div class="product-details">
-                                                    <h4 class="product-name">@item.Name</h4>
-                                                    <p class="product-sku">SKU: @item.Sku</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>@item.UnitPrice.Base.WithoutTax.ToString("0.00")</td>
-                                        <td>@item.UnitPrice.Base.Tax.ToString("0.00")</td>
-                                        <td>@item.UnitPrice.WithoutAdjustments.Formatted()</td>
-                                        <td>
-                                            <input type="hidden" name="orderLines[@item.Id].Id" value="@item.Id" />
-                                            <input type="number" name="orderLines[@item.Id].Quantity" value="@quantity" class="quantity-input" step="1" />
-                                        </td>
-                                        <td>@item.TotalPrice.WithoutAdjustments.Formatted()</td>
-                                        <td>
-                                            @using (Html.BeginUmbracoForm("RemoveFromCart", "CartSurface"))
-                                            {
-                                                <input type="hidden" name="OrderLineId" value="@item.Id" />
-                                                <button type="submit" class="remove-from-cart-btn">
-                                                    <i class="fa fa-trash red-icon"></i>
-                                                </button>
-                                            }
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="5"><strong>Subtotal</strong></td>
-                                    <td class="checkoutsutoatal"><strong class="order-total">@Order.TotalPrice.WithoutAdjustments.Formatted()</strong></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                        <div class="input-checkbox">
-                            <input type="checkbox" id="terms">
-                            <label for="terms">
-                                <span></span>
-                                I've read and accept the <a href="#">terms & conditions</a>
-                            </label>
-                        </div>
 
-                        <a href="/customer-information" class="primary-btn order-submit">Place order</a>
-                    </div>
-                </form>
+                @if (Order != null && Order.OrderLines != null && Order.OrderLines.Any())
+                {
+                    <form method="post" action="/CartSurface/UpdateCart">
+                        <div class="cart-table-responsive">
+                            <table class="table cart-table">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Price (Excl. Tax)</th>
+                                        <th>Tax</th>
+                                        <th>Unit Price</th>
+                                        <th>Quantity</th>
+                                        <th>Total</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Order.OrderLines)
+                                    {
+                                        int quantity = (int)item.Quantity;
+                                        <tr>
+                                            <td class="product-cell">
+                                                <div class="product-info">
+                                                    <img src="~/img/product05.png" alt="@item.Name" class="product-image-small" />
+                                                    <div class="product-details">
+                                                        <h4 class="product-name">@item.Name</h4>
+                                                        <p class="product-sku">SKU: @item.Sku</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>@item.UnitPrice.Base.WithoutTax.ToString("0.00")</td>
+                                            <td>@item.UnitPrice.Base.Tax.ToString("0.00")</td>
+                                            <td>@item.UnitPrice.WithoutAdjustments.Formatted()</td>
+                                            <td>
+                                                <input type="hidden" name="orderLines[@item.Id].Id" value="@item.Id" />
+                                                <input type="number" name="orderLines[@item.Id].Quantity" value="@quantity" class="quantity-input" step="1" />
+                                            </td>
+                                            <td>@item.TotalPrice.WithoutAdjustments.Formatted()</td>
+                                            <td>
+                                                @using (Html.BeginUmbracoForm("RemoveFromCart", "CartSurface"))
+                                                {
+                                                    <input type="hidden" name="OrderLineId" value="@item.Id" />
+                                                    <button type="submit" class="remove-from-cart-btn">
+                                                        <i class="fa fa-trash red-icon"></i>
+                                                    </button>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="5"><strong>Subtotal</strong></td>
+                                        <td class="checkoutsutoatal"><strong class="order-total">@Order.TotalPrice.WithoutAdjustments.Formatted()</strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            <div class="input-checkbox">
+                                <input type="checkbox" id="terms">
+                                <label for="terms">
+                                    <span></span>
+                                    I've read and accept the <a href="#">terms & conditions</a>
+                                </label>
+                            </div>
+
+                            <a href="/customer-information" class="primary-btn order-submit">Place order</a>
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <h2 class="text-center">Your cart is empty</h2>
+                }
             }
             else
             {
                 <h2 class="text-center">Your cart is empty</h2>
+                <a href="/my-account/" class="primary-btn order-submit">Login </a>
             }
         </div>
     </div>

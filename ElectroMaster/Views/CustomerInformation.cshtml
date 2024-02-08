@@ -1,10 +1,27 @@
 ﻿@using ElectroMaster.Core.Models.System.Checkout
+@using Umbraco.Cms.Core.Security
 @using Umbraco.Cms.Web.Common.PublishedModels;
 @using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
+@inject IMemberManager membermanager
 
 @{
     Layout = "Master.cshtml";
+
+ 
+    var currUser = await membermanager.GetCurrentMemberAsync();
+    var memberById = await membermanager.FindByIdAsync(currUser.Id);
+    IPublishedContent member = membermanager.AsPublishedMember(memberById);
+
+
+    var firstName = member.Value<string>("firstName");
+    var lastName = member.Value<string>("lastName");
+    var telephone = member.Value<string>("telephone");
+    var addressLine1 = member.Value<string>("addressLine1");
+    var addressLine2 = member.Value<string>("addressLine2");
+    var zipCode = member.Value<string>("zipCode");
+
 }
+
 
 @using (Html.BeginUmbracoForm("UpdateOrderInformation", "CheckoutSurface"))
 {
@@ -22,28 +39,29 @@
                             <h4 class="title">Billing address</h4>
                         </div>
                         <div class="form-group">
-                            <input class="input" type="text" name="billingAddress.FirstName" placeholder="First Name" required>
+                            <input class="input" type="text" name="billingAddress.FirstName" placeholder="First Name" value="@firstName" required>
                         </div>
                         <div class="form-group">
-                            <input class="input" type="text" name="billingAddress.LastName" placeholder="Last Name" required>
+                            <input class="input" type="text" name="billingAddress.LastName" placeholder="Last Name" value="@lastName" required>
                         </div>
                         <div class="form-group">
-                            <input class="input" type="email" name="email" placeholder="Email" required>
+                            <input class="input" type="email" name="email" placeholder="Email" value="@currUser.Email" readonly required>
+                        </div>
+
+                        <div class="form-group">
+                            <input class="input" type="text" name="billingAddress.Line1" placeholder="BillingAddress Line1" value="@addressLine1" required>
                         </div>
                         <div class="form-group">
-                            <input class="input" type="text" name="billingAddress.Line1" placeholder="BillingAddress Line1" required>
+                            <input class="input" type="text" name="billingAddress.Line2" placeholder="BillingAddress Line2" value="@addressLine2" required>
                         </div>
                         <div class="form-group">
-                            <input class="input" type="text" name="billingAddress.Line2" placeholder="BillingAddress Line2" required>
+                            <input class="input" type="text" name="billingAddress.City" placeholder="BillingAddress City"  required>
                         </div>
                         <div class="form-group">
-                            <input class="input" type="text" name="billingAddress.City" placeholder="BillingAddress City" required>
+                            <input class="input" type="text" name="billingAddress.ZipCode" placeholder="ZIP Code" value="@zipCode" required>
                         </div>
                         <div class="form-group">
-                            <input class="input" type="text" name="billingAddress.ZipCode" placeholder="ZIP Code" required>
-                        </div>
-                        <div class="form-group">
-                            <input class="input" type="tel" name="billingAddress.Telephone" placeholder="Telephone">
+                            <input class="input" type="tel" name="billingAddress.Telephone" value="@telephone" placeholder="Telephone">
                             <input name="billingAddress.Country" type="text" value="5ec6dc87-7b28-4abf-b0c0-018cd87f4a68" style="display:none;" />
 
                         </div>

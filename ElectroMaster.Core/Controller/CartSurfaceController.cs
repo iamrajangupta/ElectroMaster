@@ -64,10 +64,8 @@ namespace ElectroMaster.Core.Controller
         [HttpPost]
         public IActionResult RemoveFromCart(RemoveFromCartDto postModel)
         {
-
             try
-            {
-               
+            {               
                 _commerceApi.Uow.Execute(uow =>
                 {
                     var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
@@ -92,6 +90,4 @@ namespace ElectroMaster.Core.Controller
         }
 
     }
-
-
 }

@@ -63,6 +63,7 @@ namespace ElectroMaster.Core.Controller.API
                         .SetPaymentCountryRegion(model.BillingAddress.Country, null)
                         .SetShippingCountryRegion(model.ShippingSameAsBilling ? model.BillingAddress.Country : model.ShippingAddress.Country, null);
 
+
                     _commerceApi.SaveOrder(order);
 
                     uow.Complete();
@@ -95,8 +96,7 @@ namespace ElectroMaster.Core.Controller.API
                                             .SetShippingMethod(shippingMethod); 
                                             
                     order.InitializeTransaction();
-                    order.Finalize(order.TotalPrice, Guid.NewGuid().ToString("N"), PaymentStatus.Authorized);
-
+                    order.Finalize(order.TotalPrice, Guid.NewGuid().ToString("N"), PaymentStatus.Authorized);                 
                     order.SetOrderStatus(status);
                     _commerceApi.SaveOrder(order);
                     uow.Complete();
