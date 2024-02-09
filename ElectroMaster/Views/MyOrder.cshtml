@@ -4,12 +4,14 @@
 @using Umbraco.Commerce.Core.Api
 @using Umbraco.Commerce.Extensions
 @{
-	Layout = "Master.cshtml";
+    Layout = "Master.cshtml";
 
-  
+
 }
 @{
     var orderId = TempData["addOrderId"] as Guid?;
+    var doNotHavePermission = TempData["DoNotHavePermission"];
+    var OrderCancelSucess = TempData["OrderCancelSucess"];
     var Order = orderId != null ? CommerceApi.Instance.GetOrder(orderId.Value) : null;
 }
 
@@ -19,7 +21,14 @@
             <div class="section-title text-center">
                 <h3 class="title">Your Order</h3>
             </div>
-
+            @if (doNotHavePermission != null)
+            {
+                <h3 class="product-name" style="color:red">Order cannot be cancelled as it has already been processed to the next step.</h3>
+            }
+            @if (OrderCancelSucess != null)
+            {
+                <h3 class="product-name" style="color:green">Your order has been successfully cancelled.</h3>
+            }
             @if (Order != null && Order.OrderLines != null && Order.OrderLines.Any())
             {
                 <div class="cart-table-responsive">
@@ -66,6 +75,14 @@
                         </tfoot>
                     </table>
                 </div>
+                @using (Html.BeginUmbracoForm("CancelOrder", "OrderSurface"))
+                {
+                    @Html.Hidden("orderId", orderId)
+                    <td class="center">
+                        <button class="primary-btn order-submit" type="submit">Cancel My Order</button>
+                    </td>
+                }
+
             }
             else
             {

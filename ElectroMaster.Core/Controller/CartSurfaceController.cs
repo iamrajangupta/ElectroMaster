@@ -71,7 +71,6 @@ namespace ElectroMaster.Core.Controller
                     var order = _commerceApi.GetOrCreateCurrentOrder(_storeId)
                         .AsWritable(uow)
                         .RemoveOrderLine(postModel.OrderLineId);
-
                     _commerceApi.SaveOrder(order);
 
                     uow.Complete();

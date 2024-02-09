@@ -13,8 +13,9 @@ using ElectroMaster.Core.Extensions;
 using Stripe.Checkout;
 using Stripe;
 using Umbraco.Commerce.Core.Models;
-using System.Globalization;
 using Umbraco.Commerce.Extensions;
+using UmbracoLibrary.Services;
+using Microsoft.Extensions.Configuration;
 
 
 namespace ElectroMaster.Core.Controller
@@ -22,14 +23,15 @@ namespace ElectroMaster.Core.Controller
     public class CheckoutSurfaceController : SurfaceController
     {
         private readonly IUmbracoCommerceApi _commerceApi;
-        private readonly string _stripeSecretKey = "sk_test_51NN9SASCduWSbaBPQNIs7V75kRLkaLOnIQEWGBXpYv7b8yc64Yz8ljMx6fZ8tFjQCkuAV69sNWDYfbDbmkgMFLVS00FCtszGCz";
-
-        public CheckoutSurfaceController(IUmbracoContextAccessor umbracoContextAccessor, IUmbracoDatabaseFactory databaseFactory,
+        private readonly IConfiguration _configuration;
+    
+        public CheckoutSurfaceController(IUmbracoContextAccessor umbracoContextAccessor, IUmbracoDatabaseFactory databaseFactory, IConfiguration configuration,
             ServiceContext services, AppCaches appCaches, IProfilingLogger profilingLogger, IPublishedUrlProvider publishedUrlProvider,
             IUmbracoCommerceApi commerceApi)
             : base(umbracoContextAccessor, databaseFactory, services, appCaches, profilingLogger, publishedUrlProvider)
         {
             _commerceApi = commerceApi;
+            _configuration = configuration;
         }
 
 
@@ -141,40 +143,19 @@ namespace ElectroMaster.Core.Controller
             }
 
         }
-
+      
         [HttpPost]
         public IActionResult CreateCheckoutSession(decimal amount, string productName, string orderId, int quantity)
         {
+            var stripeSecretKey = _configuration["StripeSettings:SecretKey"];
+            var stripeCheckout = new StripeCheckoutService();
+            var successUrl = $"{Request.Scheme}://{Request.Host}/cart/success?session_id={{CHECKOUT_SESSION_ID}}&orderId={orderId}";
+            var cancelUrl = $"{Request.Scheme}://{Request.Host}/cart/";
+            var currency = "GBP";
+
             try
             {
-                var options = new SessionCreateOptions
-                {
-                    LineItems = new List<SessionLineItemOptions>
-                    {
-                        new SessionLineItemOptions
-                        {
-                            PriceData = new SessionLineItemPriceDataOptions
-                            {
-                                UnitAmount = (long)(amount * 100),
-                                Currency = "GBP",
-                                ProductData = new SessionLineItemPriceDataProductDataOptions
-                                {
-                                    Name = productName,
-                                },
-                            },
-                            Quantity = quantity,
-                        },
-                    },
-                    PaymentMethodTypes = new List<string> { "card" },
-                    Mode = "payment",
-                    SuccessUrl = $"{Request.Scheme}://{Request.Host}/cart/success?session_id={{CHECKOUT_SESSION_ID}}&orderId={orderId}",
-                    CancelUrl = $"{Request.Scheme}://{Request.Host}/cart/",
-                };
-
-                StripeConfiguration.ApiKey = _stripeSecretKey;
-                var service = new SessionService();
-                var session = service.Create(options);
-
+                var session = stripeCheckout.CreateCheckoutSession(stripeSecretKey, amount, successUrl, cancelUrl, currency, productName, quantity);
                 return Redirect(session.Url);
             }
             catch (Exception ex)
@@ -184,12 +165,13 @@ namespace ElectroMaster.Core.Controller
         }
 
 
+
         [HttpGet("/cart/success")]
         public IActionResult PaymentSuccess([FromQuery] string session_id, [FromQuery] string orderId)
         {
             try
             {
-                StripeConfiguration.ApiKey = _stripeSecretKey;
+                var stripeSecretKey = _configuration["StripeSettings:SecretKey"];
                 var service = new SessionService();
                 var session = service.Get(session_id);
 

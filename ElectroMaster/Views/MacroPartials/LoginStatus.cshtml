@@ -13,19 +13,23 @@
 }
 @if (isLoggedIn)
 {
-    <div class="login-status">
+    <div class="col-md-6">
+        <div class="info-table">
+            <div class="login-status">
 
-        <p>
-            <strong>Welcome back, @Context?.User?.Identity?.Name!</strong>
-            <span class="additional-content">
-                <i class="fa fa-check-circle"></i> You are currently logged in.
-            </span>
-        </p>
+                <p>
+                    <strong>Welcome back, @Context?.User?.Identity?.Name!</strong>
+                    <span class="additional-content">
+                        <i class="fa fa-check-circle"></i> You are currently logged in.
+                    </span>
+                </p>
 
-        @using (Html.BeginUmbracoForm<UmbLoginStatusController>("HandleLogout", new { RedirectUrl = logoutModel.RedirectUrl }))
-        {
-            <button type="submit" class="btn btn-primary">Log out</button>
-        }
+                @using (Html.BeginUmbracoForm<UmbLoginStatusController>("HandleLogout", new { RedirectUrl = logoutModel.RedirectUrl }))
+                {
+                    <button type="submit" class="btn btn-primary">Log out</button>
+                }
 
+            </div>
+        </div>
     </div>
 }
