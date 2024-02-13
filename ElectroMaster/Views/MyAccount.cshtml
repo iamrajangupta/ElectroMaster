@@ -23,15 +23,13 @@
                                 @await Umbraco.RenderMacroAsync("Login")
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="info-table">                                  
-                                @await Umbraco.RenderMacroAsync("LoginStatus")
-                            </div>
-                        </div>
+
+                        @await Umbraco.RenderMacroAsync("LoginStatus")
+
                     </div>
                 </div>
                 <div id="signup" class="tabcontent" style="display:none;">
-                   @await Umbraco.RenderMacroAsync("RegisterMember")
+                    @await Umbraco.RenderMacroAsync("RegisterMember")
                 </div>
             </div>
         </div>

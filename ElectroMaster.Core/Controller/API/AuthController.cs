@@ -1,16 +1,10 @@
 ﻿using Umbraco.Cms.Web.Common.Controllers;
-using Umbraco.Cms.Core.Models.Membership;
 using Umbraco.Cms.Core.Security;
-using Umbraco.Cms.Web.Common.Attributes;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Umbraco.Cms.Web.Common.Security;
-using Umbraco.Cms.Web.Common.Filters;
 using Umbraco.Cms.Core.Services;
 using ElectroMaster.Core.Models.System.Auth;
-using Microsoft.AspNetCore.Identity;
 using Umbraco.Cms.Core.Models.PublishedContent;
-using Umbraco.Commerce.Core.Api;
 
 namespace ElectroMaster.Core.Controller.API
 {

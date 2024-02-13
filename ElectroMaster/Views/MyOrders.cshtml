@@ -25,7 +25,7 @@
     {
         isLoggedIn = false;
     }
-    var myOrder = CommerceApi.Instance.GetAllOrdersForCustomer(store.Id, currUserEmail)
+    var myOrder = CommerceApi.Instance.GetFinalizedOrdersForCustomer(store.Id, currUserEmail)
                                       .OrderByDescending(order => order.FinalizedDate)
                                       .ToList();
 }

@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="IconnectUmbracoLibrary" Version="1.0.0" />
     <PackageReference Include="Stripe.net" Version="43.9.0" />
     <PackageReference Include="Umbraco.Cms" Version="13.0.0" />
     <PackageReference Include="Umbraco.Commerce" Version="13.0.0" />
