@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ElectroMaster.Core.Models.System.Cart;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Stripe;
 using System.ComponentModel.DataAnnotations;
 using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Logging;
@@ -18,9 +21,11 @@ namespace ElectroMaster.Core.Controller
     public class OrderSurfaceController : SurfaceController
     {
         private readonly IUmbracoCommerceApi _commerceApi;
-        public OrderSurfaceController(IUmbracoContextAccessor umbracoContextAccessor, IUmbracoCommerceApi commerceApi, IUmbracoDatabaseFactory databaseFactory, ServiceContext services, AppCaches appCaches, IProfilingLogger profilingLogger, IPublishedUrlProvider publishedUrlProvider) : base(umbracoContextAccessor, databaseFactory, services, appCaches, profilingLogger, publishedUrlProvider)
+        private readonly IConfiguration _configuration;
+        public OrderSurfaceController(IUmbracoContextAccessor umbracoContextAccessor, IUmbracoCommerceApi commerceApi, IUmbracoDatabaseFactory databaseFactory, IConfiguration configuration, ServiceContext services, AppCaches appCaches, IProfilingLogger profilingLogger, IPublishedUrlProvider publishedUrlProvider) : base(umbracoContextAccessor, databaseFactory, services, appCaches, profilingLogger, publishedUrlProvider)
         {
             _commerceApi = commerceApi;
+            _configuration = configuration;
         }
 
         [HttpPost]
@@ -47,21 +52,27 @@ namespace ElectroMaster.Core.Controller
                 _commerceApi.Uow.Execute(uow =>
                 {
                     Guid statusId = new Guid("580181af-ad08-410f-b277-018cd87f4b7e");
-                    Guid CancelstatusId = new Guid("fcb245dd-4227-4d99-8ab4-018cd87f4bac");
+                    Guid cancelStatusId = new Guid("fcb245dd-4227-4d99-8ab4-018cd87f4bac");
 
-                    var order = _commerceApi.GetOrder(orderId)
-                                            .AsWritable(uow);
+                    var order = _commerceApi.GetOrder(orderId).AsWritable(uow);
                     if (order == null)
                     {
+                        TempData["addOrderId"] = orderId;
                         return CurrentUmbracoPage();
                     }
                     if (order.OrderStatusId == statusId)
                     {
-                        order.SetOrderStatus(CancelstatusId);
+                        var paymentIntent = order.TransactionInfo.TransactionId;
+
+                        // Call the refund method
+                        RefundPayment(paymentIntent, order.TotalPrice.Value); // Refund the full amount
+
+                        order.SetOrderStatus(cancelStatusId);
                         _commerceApi.SaveOrder(order);
                         uow.Complete();
+
                         TempData["addOrderId"] = orderId;
-                        TempData["OrderCancelSucess"] = "OrderCancelSucess";
+                        TempData["OrderCancelSucess"] = "OrderCancelSuccess";
                         return CurrentUmbracoPage();
                     }
                     else
@@ -70,15 +81,63 @@ namespace ElectroMaster.Core.Controller
                         TempData["DoNotHavePermission"] = "DoNotHavePermission";
                         return CurrentUmbracoPage();
                     }
-
                 });
                 return CurrentUmbracoPage();
             }
             catch (ValidationException ex)
             {
+                // Handle validation exceptions
+                ModelState.AddModelError("productReference", "Failed to remove cart item");
+                return CurrentUmbracoPage();
+            }
+            catch (Exception ex)
+            {
+                // Handle other exceptions
+                ModelState.AddModelError("generalError", $"An error occurred: {ex.Message}");
+                return CurrentUmbracoPage();
+            }
+        }
 
-                ModelState.AddModelError("productReference", "Failed to remove cart item");       
-                return CurrentUmbracoPage(); 
+        private void RefundPayment(string paymentIntentId, decimal amountToRefund)
+        {
+            try
+            {
+                var stripeSecretKey = _configuration["StripeSettings:SecretKey"];
+                StripeConfiguration.ApiKey = stripeSecretKey;
+
+               
+                var chargeService = new ChargeService();
+                var chargeListOptions = new ChargeListOptions
+                {
+                    PaymentIntent = paymentIntentId,
+                    Limit = 1 
+                };
+                var charges = chargeService.List(chargeListOptions);
+
+                var charge = charges.FirstOrDefault();
+
+                if (charge == null)
+                {
+                    throw new Exception("No charge associated with the payment intent.");
+                }
+
+                
+                var refundService = new RefundService();
+                var refundOptions = new RefundCreateOptions
+                {
+                    Charge = charge.Id,
+                    Amount = (long)(amountToRefund * 100),
+                    Reason = "requested_by_customer",
+                };
+                var refund = refundService.Create(refundOptions);
+            }
+            catch (StripeException ex)
+            {
+                throw new Exception($"Failed to process refund: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"An error occurred during refund: {ex.Message}");
             }
         }
 

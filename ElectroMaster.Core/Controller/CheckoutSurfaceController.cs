@@ -11,11 +11,11 @@ using Umbraco.Commerce.Core.Api;
 using Umbraco.Commerce.Core;
 using ElectroMaster.Core.Extensions;
 using Stripe.Checkout;
-using Stripe;
 using Umbraco.Commerce.Core.Models;
 using Umbraco.Commerce.Extensions;
 using UmbracoLibrary.Services;
 using Microsoft.Extensions.Configuration;
+using ElectroMaster.Core.Models.System.Cart;
 
 
 namespace ElectroMaster.Core.Controller
@@ -149,6 +149,7 @@ namespace ElectroMaster.Core.Controller
         {
             var stripeSecretKey = _configuration["StripeSettings:SecretKey"];
             var stripeCheckout = new StripeCheckoutService();
+         
             var successUrl = $"{Request.Scheme}://{Request.Host}/cart/success?session_id={{CHECKOUT_SESSION_ID}}&orderId={orderId}";
             var cancelUrl = $"{Request.Scheme}://{Request.Host}/cart/";
             var currency = "GBP";
@@ -214,5 +215,7 @@ namespace ElectroMaster.Core.Controller
                 return StatusCode(500, new { ErrorMessage = "An error occurred", ErrorDetails = ex.Message });
             }
         }
+
+       
     }
 }
