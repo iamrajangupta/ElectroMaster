@@ -81,10 +81,44 @@
                                 <tfoot>
                                     <tr>
                                         <td colspan="5"><strong>Subtotal</strong></td>
-                                        <td class="checkoutsutoatal"><strong class="order-total">@Order.TotalPrice.WithoutAdjustments.Formatted()</strong></td>
+                                        <td class="checkoutsutoatal"><strong class="order-total">£ @Order.TotalPrice.Value.WithTax</strong></td>
+
                                     </tr>
                                 </tfoot>
+
+
                             </table>
+                            <div class="newsletter">
+                                @using (Html.BeginUmbracoForm("ApplyDiscountOrGiftCardCode", "CheckoutSurface"))
+                                {
+                                    <input class="input" name="Code" placeholder="Discount / Gift Card Code">
+                                    <button type="submit" class="newsletter-btn">Apply</button>
+                                }
+                            </div>
+
+                            <div class="discount-codes">
+                                @{
+                                    var discount = @Order.DiscountCodes.ToList();
+                                    foreach (var item in discount)
+                                    {
+                                        var code = item.Code;
+                                        <div class="discount-code">
+                                            <p class="product-sku">@code</p>
+                                            @using (Html.BeginUmbracoForm("RemoveDiscountOrGiftCardCode", "CheckoutSurface"))
+                                            {
+                                                <input type="hidden" name="Code" value="@code" />
+                                                @Html.Hidden("code", code)
+                                                @Html.Hidden("orderId", Order.Id)
+                                                <button type="submit" class="newsletter-btn">Remove</button>
+                                            }
+                                        </div>
+                                    }
+                                }
+                            </div>
+                            <label for="terms">
+                                <span></span>                             
+                                Use code <strong>NY10</strong> to get 10% off!
+                            </label>
                             <div class="input-checkbox">
                                 <input type="checkbox" id="terms">
                                 <label for="terms">
@@ -112,38 +146,3 @@
 </div>
 
 
-<!-- NEWSLETTER -->
-<div id="newsletter" class="section">
-    <!-- container -->
-    <div class="container">
-        <!-- row -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="newsletter">
-                    <p>Sign Up for the <strong>NEWSLETTER</strong></p>
-                    <form>
-                        <input class="input" type="email" placeholder="Enter Your Email">
-                        <button class="newsletter-btn"><i class="fa fa-envelope"></i> Subscribe</button>
-                    </form>
-                    <ul class="newsletter-follow">
-                        <li>
-                            <a href="#"><i class="fa fa-facebook"></i></a>
-                        </li>
-                        <li>
-                            <a href="#"><i class="fa fa-twitter"></i></a>
-                        </li>
-                        <li>
-                            <a href="#"><i class="fa fa-instagram"></i></a>
-                        </li>
-                        <li>
-                            <a href="#"><i class="fa fa-pinterest"></i></a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <!-- /row -->
-    </div>
-    <!-- /container -->
-</div>
-<!-- /NEWSLETTER -->
