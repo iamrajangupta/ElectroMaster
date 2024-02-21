@@ -67,6 +67,21 @@
                                             </td>
                                             <td>@item.TotalPrice.WithoutAdjustments.Formatted()</td>
                                             <td>
+                                                @using (Html.BeginUmbracoForm("FilterContent", "CartSurface"))
+                                                {
+                                                    <input type="hidden" name="OrderLineId" value="@item.Id" />
+                                                    <button type="submit" class="remove-from-cart-btn">
+                                                        <i class="fa fa-trash red-icon"></i>
+                                                    </button>
+                                                }
+
+                                                @using (Html.BeginUmbracoForm("PaginateContent", "CartSurface"))
+                                                {
+                                                    <input type="hidden" name="OrderLineId" value="@item.Id" />
+                                                    <button type="submit" class="remove-from-cart-btn">
+                                                        <i class="fa fa-trash red-icon"></i>
+                                                    </button>
+                                                }
                                                 @using (Html.BeginUmbracoForm("RemoveFromCart", "CartSurface"))
                                                 {
                                                     <input type="hidden" name="OrderLineId" value="@item.Id" />
