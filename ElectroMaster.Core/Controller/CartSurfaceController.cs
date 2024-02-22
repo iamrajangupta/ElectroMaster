@@ -69,8 +69,16 @@ namespace ElectroMaster.Core.Controller
         public IActionResult RemoveFromCart(RemoveFromCartDto postModel)
         {
 
+            var loadmore = LoadMoreContent("product", 3, 5);
+
+            var kkk = loadmore.ToList();
+
+
+
+
             var paginatedContent = PaginateContent("product", 2, 5);
 
+          
             var kk = paginatedContent.Items.ToList();
 
             foreach (var item in kk)
@@ -81,7 +89,9 @@ namespace ElectroMaster.Core.Controller
                 {
                     var s = p.Value;
                 }
-            } 
+            }
+
+
             //try
             //{
             //    _commerceApi.Uow.Execute(uow =>
@@ -105,14 +115,29 @@ namespace ElectroMaster.Core.Controller
             return Redirect(returnUrl);
         }
 
-        [HttpPost]
+       
+
+       
+
+        public class ContentModel
+        {
+            public string Title { get; set; }
+           
+            public List<KeyValuePair<string, object>> Properties { get; set; }
+        }
+
+        public class PaginationModel<T>
+        {
+            public int noItemsOnPage { get; set; }
+            public int TotalPages { get; set; }
+            public int CurrentPage { get; set; }
+            public string? Url { get; set; }
+            public IEnumerable<T>? Items { get; set; }
+        }
+
+
         public PaginationModel<ContentModel> PaginateContent(string contentTypeAlias, int currentPage, int noItemsOnPage)
         {
-            contentTypeAlias = "product";
-            currentPage = 2;
-            noItemsOnPage = 5;
-
-
             var contentItems = _umbracoHelper.ContentAtRoot()
                 .SelectMany(rootNode => rootNode.Descendants())
                 .Where(x => x.ContentType.Alias == contentTypeAlias && x.IsVisible())
@@ -142,67 +167,49 @@ namespace ElectroMaster.Core.Controller
                                        .Select(contentItem => new ContentModel
                                        {
                                            Title = contentItem.Name,
-                                           Properties = contentItem.Properties.ToDictionary(property => property.Alias, property => property.GetValue())
+                                           Properties = contentItem.Properties.Select(property => new KeyValuePair<string, object>(property.Alias, property.GetValue())).ToList()
                                        });
 
             return new PaginationModel<ContentModel>()
             {
-                PageSize = pageSize,
+                noItemsOnPage = pageSize,
                 CurrentPage = page,
                 TotalPages = totalPages,
                 Items = paginatedItems
             };
         }
 
-        public class ContentModel
+        public IEnumerable<ContentModel> LoadMoreContent(string contentTypeAlias, int skip, int take)
         {
-            public string Title { get; set; }
-
-            public IDictionary<string, object> Properties { get; set; }
-        }
-
-        public class PaginationModel<T>
-        {
-            public int PageSize { get; set; }
-            public int TotalPages { get; set; }
-            public int CurrentPage { get; set; }
-            public string? Url { get; set; }
-            public IEnumerable<T>? Items { get; set; }
-        }
-
-        public IEnumerable<ContentModel> FilterContent(string contentTypeAlias, string filter)
-        {
-            contentTypeAlias = "product";
-            filter = "SAMSUNG";
             var contentItems = _umbracoHelper.ContentAtRoot()
                 .SelectMany(rootNode => rootNode.Descendants())
                 .Where(x => x.ContentType.Alias == contentTypeAlias && x.IsVisible())
                 .OrderByDescending(a => a.CreateDate)
+                .Skip(skip)
+                .Take(take)
                 .ToList();
+
+            if (contentItems == null)
+            {
+                return Enumerable.Empty<ContentModel>();
+            }
 
             var result = new List<ContentModel>();
 
             foreach (var contentItem in contentItems)
             {
-                var properties = new Dictionary<string, object>();
+                var properties = new List<KeyValuePair<string, object>>();
 
                 foreach (var property in contentItem.Properties)
                 {
-                    var propertyValue = property.GetValue()?.ToString();
-                    if (!string.IsNullOrEmpty(propertyValue) && propertyValue.Contains(filter, StringComparison.OrdinalIgnoreCase))
-                    {
-                        properties[property.Alias] = propertyValue;
-                    }
+                    properties.Add(new KeyValuePair<string, object>(property.Alias, property.GetValue()));
                 }
 
-                if (properties.Count > 0)
+                result.Add(new ContentModel
                 {
-                    result.Add(new ContentModel
-                    {
-                        Title = contentItem.Name,
-                        Properties = properties
-                    });
-                }
+                    Title = contentItem.Name,
+                    Properties = properties
+                });
             }
 
             return result;
