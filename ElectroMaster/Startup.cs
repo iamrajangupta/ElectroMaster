@@ -1,3 +1,4 @@
+using ElectroMaster.Core.Extensions;
 using Umbraco.Commerce.Extensions;
 namespace ElectroMaster
 {
@@ -33,6 +34,7 @@ namespace ElectroMaster
             services.AddUmbraco(_env, _config)
                 .AddBackOffice()
                 .AddWebsite()
+                .AddGoogleAuthentication() // Add this line
                 .AddDeliveryApi()
                 .AddUmbracoCommerce(builder =>
                 {

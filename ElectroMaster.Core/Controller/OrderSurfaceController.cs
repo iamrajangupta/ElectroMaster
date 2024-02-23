@@ -65,8 +65,9 @@ namespace ElectroMaster.Core.Controller
                     {
                         var paymentIntent = order.TransactionInfo.TransactionId;
 
+                        var amount = order.TotalPrice.Value.WithTax;
                         // Call the refund method
-                        RefundPayment(paymentIntent, order.TotalPrice.Value); // Refund the full amount
+                        RefundPayment(paymentIntent, amount); // Refund the full amount
 
                         order.SetOrderStatus(cancelStatusId);
                       
