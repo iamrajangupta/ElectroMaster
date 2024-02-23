@@ -55,6 +55,7 @@ namespace ElectroMaster.Core.Controller
                     Guid cancelStatusId = new Guid("fcb245dd-4227-4d99-8ab4-018cd87f4bac");
 
                     var order = _commerceApi.GetOrder(orderId).AsWritable(uow);
+                   
                     if (order == null)
                     {
                         TempData["addOrderId"] = orderId;
@@ -64,10 +65,12 @@ namespace ElectroMaster.Core.Controller
                     {
                         var paymentIntent = order.TransactionInfo.TransactionId;
 
+                        var amount = order.TotalPrice.Value.WithTax;
                         // Call the refund method
-                        RefundPayment(paymentIntent, order.TotalPrice.Value); // Refund the full amount
+                        RefundPayment(paymentIntent, amount); // Refund the full amount
 
                         order.SetOrderStatus(cancelStatusId);
+                      
                         _commerceApi.SaveOrder(order);
                         uow.Complete();
 

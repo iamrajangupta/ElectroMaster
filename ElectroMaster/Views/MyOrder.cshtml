@@ -70,7 +70,7 @@
                         <tfoot>
                             <tr>
                                 <td colspan="5"><strong>Subtotal</strong></td>
-                                <td class="checkoutsutoatal"><strong class="order-total">@Order.TotalPrice.WithoutAdjustments.Formatted()</strong></td>
+                                <td class="checkoutsutoatal"><strong class="order-total">£ @Order.TotalPrice.Value.WithTax</strong></td>
                             </tr>
                         </tfoot>
                     </table>

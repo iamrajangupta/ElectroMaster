@@ -87,21 +87,21 @@
                     <div class="text-center">
                         @using (Html.BeginUmbracoForm("CreateCheckoutSession", "CheckoutSurface"))
                         {
-                            var priceString = Order.TotalPrice.WithoutAdjustments.Formatted().ToString();
-                            var cleanedPriceString = priceString.Replace("£", "").Replace(",", "");
+                            var priceString = Order.TotalPrice.Value.WithTax;
+                            //var cleanedPriceString = priceString.Replace("£", "").Replace(",", "");
 
-                            if (Decimal.TryParse(cleanedPriceString, out decimal decimalPrice))
-                            {
+                           @*  if (Decimal.TryParse(cleanedPriceString, out decimal decimalPrice))
+                            { *@
                                 var orderNo = Order.CartNumber;
                                 var orderId = Order.Id;
 
-                                @Html.Hidden("amount", decimalPrice)
+                                @Html.Hidden("amount", priceString)
                                 @Html.Hidden("orderId", orderId)
                                 @Html.Hidden("productName", orderNo)
                                 @Html.Hidden("quantity", 1)
 
                                 <button class="primary-btn" type="submit">Continue to Payment</button>
-                            }
+@*                             } *@
                         }
                      @*    @using (await Html.BeginPaymentFormAsync(Order))
                         {

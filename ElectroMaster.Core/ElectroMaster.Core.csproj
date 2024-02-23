@@ -12,8 +12,10 @@
 
   <ItemGroup>
     <PackageReference Include="IconnectUmbracoLibrary" Version="1.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.2" />
     <PackageReference Include="Stripe.net" Version="43.9.0" />
     <PackageReference Include="Umbraco.Cms" Version="13.0.0" />
+    <PackageReference Include="Umbraco.Cms.Core" Version="13.0.0" />
     <PackageReference Include="Umbraco.Commerce" Version="13.0.0" />
     <PackageReference Include="Umbraco.Commerce.Checkout" Version="13.0.0" />
     <PackageReference Include="Umbraco.Commerce.PaymentProviders.Stripe" Version="13.0.0" />

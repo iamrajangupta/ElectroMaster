@@ -51,11 +51,7 @@
                                     var price = prices[0].Value;
                                     var productReference = item.Key.ToString();
                                     var productCount = item.Stock;
-
-                                    if (item.Stock < 1)
-                                    {
-                                        isProductOutOfStock = true;
-                                    }
+                                    isProductOutOfStock = (item.Stock < 1) ? true : false;
 
                                     <!-- product -->
                                     <div class="product">
@@ -118,8 +114,6 @@
                                                         <i class="fa fa-shopping-cart"></i> add to cart
                                                     </button>
                                                 </div>
-
-
                                             }
                                         </a>
                                     </div>

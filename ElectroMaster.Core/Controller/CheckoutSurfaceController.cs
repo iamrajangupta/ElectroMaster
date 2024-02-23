@@ -15,7 +15,7 @@ using Umbraco.Commerce.Core.Models;
 using Umbraco.Commerce.Extensions;
 using UmbracoLibrary.Services;
 using Microsoft.Extensions.Configuration;
-using ElectroMaster.Core.Models.System.Cart;
+using System.ComponentModel.DataAnnotations;
 
 
 namespace ElectroMaster.Core.Controller
@@ -143,7 +143,63 @@ namespace ElectroMaster.Core.Controller
             }
 
         }
-      
+
+
+        [HttpPost]
+        public IActionResult ApplyDiscountOrGiftCardCode(DiscountOrGiftCardCodeDto model)
+        {
+            try
+            {
+                _commerceApi.Uow.Execute(uow =>
+                {
+                    var store = CurrentPage.GetStore();
+                    var order = _commerceApi.GetOrCreateCurrentOrder(store.Id)
+                        .AsWritable(uow)
+                        .Redeem(model.Code);
+
+                    _commerceApi.SaveOrder(order);
+
+                    uow.Complete();
+                });
+            }
+            catch (ValidationException ex)
+            {
+                ModelState.AddModelError("", "Failed to redeem discount code");
+
+                return CurrentUmbracoPage();
+            }
+
+            return RedirectToCurrentUmbracoPage();
+        }
+
+        [HttpPost]
+        public IActionResult RemoveDiscountOrGiftCardCode(string code)
+        {
+            try
+            {
+               
+                _commerceApi.Uow.Execute(uow =>
+                {
+                    var store = CurrentPage.GetStore();
+                    var order = _commerceApi.GetOrCreateCurrentOrder(store.Id)
+                        .AsWritable(uow)
+                        .Unredeem(code);
+
+                    _commerceApi.SaveOrder(order);
+
+                    uow.Complete();
+                });
+            }
+            catch (ValidationException ex)
+            {
+                ModelState.AddModelError("", "Failed to redeem discount code");
+
+                return CurrentUmbracoPage();
+            }
+
+            return RedirectToCurrentUmbracoPage();
+        }
+
         [HttpPost]
         public IActionResult CreateCheckoutSession(decimal amount, string productName, string orderId, int quantity)
         {
@@ -214,8 +270,6 @@ namespace ElectroMaster.Core.Controller
             {
                 return StatusCode(500, new { ErrorMessage = "An error occurred", ErrorDetails = ex.Message });
             }
-        }
-
-       
+        }       
     }
 }
