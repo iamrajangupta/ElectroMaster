@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using MyCustomUmbracoProject.ExternalUserLogin.GoogleAuthentication;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace ElectroMaster.Core.Extensions;
 
@@ -34,11 +32,7 @@ public static class GoogleAuthenticationExtensions
                             options.CallbackPath = "/umbraco-google-signin";
                             options.ClientId = "750763726057-r58rm7r2oi1ffuogh4hsoe91tol818nj.apps.googleusercontent.com"; // Replace with your client id generated while creating OAuth client ID
                             options.ClientSecret = "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"; // Replace with your client secret generated while creating OAuth client ID
-
                         });
-
-
-
                 });
         });
         return builder;
