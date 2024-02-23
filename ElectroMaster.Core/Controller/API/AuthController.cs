@@ -5,6 +5,7 @@ using Umbraco.Cms.Web.Common.Security;
 using Umbraco.Cms.Core.Services;
 using ElectroMaster.Core.Models.System.Auth;
 using Umbraco.Cms.Core.Models.PublishedContent;
+using ElectroMaster.Core.Extensions;
 
 namespace ElectroMaster.Core.Controller.API
 {
@@ -39,7 +40,7 @@ namespace ElectroMaster.Core.Controller.API
                 return NotFound("User not found");
             }
 
-            var result = await _signInManager.PasswordSignInAsync(member.Username, model.Password, model.RememberMe, true);
+            var result = await _signInManager.ExternalLoginSignInAsync();
             if (result.Succeeded)
             {
                 // Return member details along with success message
