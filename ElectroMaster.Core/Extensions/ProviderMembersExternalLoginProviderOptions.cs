@@ -2,64 +2,41 @@
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Web.Common.Security;
 
-namespace MyUmbracoProject.CustomAuthentication;
-
-public class ProviderMembersExternalLoginProviderOptions : IConfigureNamedOptions<MemberExternalLoginProviderOptions>
+namespace ElectroMaster.Core.Extensions
 {
-    public const string SchemeName = "OpenIdConnect";
-    public void Configure(string? name, MemberExternalLoginProviderOptions options)
+    public class ProviderMembersExternalLoginProviderOptions : IConfigureNamedOptions<MemberExternalLoginProviderOptions>
     {
-        if (name != Constants.Security.MemberExternalAuthenticationTypePrefix + SchemeName)
+        public const string SchemeName = "OpenIdConnect";
+
+        public void Configure(string? name, MemberExternalLoginProviderOptions options)
         {
-            return;
+            if (name != Constants.Security.MemberExternalAuthenticationTypePrefix + SchemeName)
+            {
+                return;
+            }
+
+            Configure(options);
         }
 
-        Configure(options);
-    }
-
-    public void Configure(MemberExternalLoginProviderOptions options)
-    {
-        // The following options are relevant if you
-        // want to configure auto-linking on the authentication.
-        options.AutoLinkOptions = new MemberExternalSignInAutoLinkOptions(
-
-            // Set to true to enable auto-linking
-            autoLinkExternalAccount: true,
-
-            // [OPTIONAL]
-            // Default: The culture specified in appsettings.json.
-            // Specify the default culture to create the Member as.
-            // It can be dynamically assigned in the OnAutoLinking callback.
-            defaultCulture: null,
-
-            // [OPTIONAL]
-            // Specify the default "IsApproved" status.
-            // Must be true for auto-linking.
-            defaultIsApproved: true,
-
-            // [OPTIONAL]
-            // Default: "Member"
-            // Specify the Member Type alias.
-            defaultMemberTypeAlias: Constants.Security.DefaultMemberTypeAlias
-        )
+        public void Configure(MemberExternalLoginProviderOptions options)
         {
-            // [OPTIONAL] Callback
-            OnAutoLinking = (autoLinkUser, loginInfo) =>
+            options.AutoLinkOptions = new MemberExternalSignInAutoLinkOptions(
+                autoLinkExternalAccount: true,
+                defaultCulture: null,
+                defaultIsApproved: true,
+                defaultMemberTypeAlias: Constants.Security.DefaultMemberTypeAlias
+            )
             {
-                // Customize the Member before it's linked.
-                // Modify the Members groups based on the Claims returned
-                // in the external ogin info.
-            },
-            OnExternalLogin = (user, loginInfo) =>
-            {
-                // Customize the Member before it is saved whenever they have
-                // logged in with the external provider.
-                // Sync the Members name based on the Claims returned
-                // in the external login info
-
-                // Returns a boolean indicating if sign-in should continue or not.
-                return true;
-            }
-        };
+                OnAutoLinking = (autoLinkUser, loginInfo) =>
+                {
+                    // Customize the member before linking
+                },
+                OnExternalLogin = (user, loginInfo) =>
+                {
+                    // Customize the member before saving
+                    return true;
+                }
+            };
+        }
     }
 }

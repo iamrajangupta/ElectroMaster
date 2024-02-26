@@ -26,46 +26,46 @@ namespace ElectroMaster.Core.Controller.API
             _memberManager = memberManager;
         }
 
-        [HttpPost("memberLogin")]
-        public async Task<IActionResult> Login([FromBody] MemberLoginDto model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        //[HttpPost("memberLogin")]
+        //public async Task<IActionResult> Login([FromBody] MemberLoginDto model)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
 
-            var member = _memberService.GetByUsername(model.Email);
-            if (member == null)
-            {
-                return NotFound("User not found");
-            }
+        //    var member = _memberService.GetByUsername(model.Email);
+        //    if (member == null)
+        //    {
+        //        return NotFound("User not found");
+        //    }
 
-            var result = await _signInManager.ExternalLoginSignInAsync();
-            if (result.Succeeded)
-            {
-                // Return member details along with success message
-                return Ok(new
-                {
-                    Message = "Login successful",
-                    Member = new
-                    {
-                        Id = member.Id,
-                        Username = member.Username,
-                    }
-                });
-            }
+        //    var result = await _signInManager.ExternalLoginSignInAsync();
+        //    if (result.Succeeded)
+        //    {
+        //        // Return member details along with success message
+        //        return Ok(new
+        //        {
+        //            Message = "Login successful",
+        //            Member = new
+        //            {
+        //                Id = member.Id,
+        //                Username = member.Username,
+        //            }
+        //        });
+        //    }
 
-            if (result.IsLockedOut)
-            {
-                return BadRequest("Account is locked out");
-            }
-            else if (result.IsNotAllowed)
-            {
-                return BadRequest("Account is not allowed to sign in");
-            }
+        //    if (result.IsLockedOut)
+        //    {
+        //        return BadRequest("Account is locked out");
+        //    }
+        //    else if (result.IsNotAllowed)
+        //    {
+        //        return BadRequest("Account is not allowed to sign in");
+        //    }
 
-            return Unauthorized("Invalid username or password");
-        }
+        //    return Unauthorized("Invalid username or password");
+        //}
 
         [HttpGet("memberDetail")]
         public async Task<IActionResult> GetMemberByEmail([FromQuery] string email)
