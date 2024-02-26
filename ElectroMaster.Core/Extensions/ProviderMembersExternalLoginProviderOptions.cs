@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Options;
+﻿// ProviderMembersExternalLoginProviderOptions.cs
+
+using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Web.Common.Security;
 

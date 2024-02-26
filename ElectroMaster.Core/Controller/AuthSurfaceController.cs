@@ -44,10 +44,8 @@ namespace MemorialsGroundsCore.Controller
 
         public IActionResult GoogleSignIn()
         {
-            // Redirect URL after Google authentication
-            var redirectUrl = Url.Action(nameof(GoogleCallback), "AuthSurface", null, Request.Scheme);
 
-            // Initiate Google authentication challenge
+            var redirectUrl = Url.Action(nameof(GoogleCallback), "AuthSurface", null, Request.Scheme);
             return Challenge(new AuthenticationProperties { RedirectUri = redirectUrl }, GoogleDefaults.AuthenticationScheme);
         }
 
@@ -69,9 +67,12 @@ namespace MemorialsGroundsCore.Controller
             var existingMember = _memberService.GetByEmail(email);
             if (existingMember == null)
             {
-                return CurrentUmbracoPage();
+                // Create a new member if the user doesn't exist
+                _memberService.CreateMemberWithIdentity(email, email, email, "Member");
+                 
             }
 
+            // Retrieve the newly created or existing user
             var user = await _memberManager.FindByEmailAsync(email);
 
             // Sign in the user
