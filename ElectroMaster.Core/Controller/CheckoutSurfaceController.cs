@@ -13,9 +13,10 @@ using ElectroMaster.Core.Extensions;
 using Stripe.Checkout;
 using Umbraco.Commerce.Core.Models;
 using Umbraco.Commerce.Extensions;
-using UmbracoLibrary.Services;
 using Microsoft.Extensions.Configuration;
 using System.ComponentModel.DataAnnotations;
+using Iconnect.Umbraco.Utils.Interfaces;
+using Iconnect.Umbraco.Utils.Models;
 
 
 namespace ElectroMaster.Core.Controller
@@ -24,14 +25,16 @@ namespace ElectroMaster.Core.Controller
     {
         private readonly IUmbracoCommerceApi _commerceApi;
         private readonly IConfiguration _configuration;
+        private readonly IStripeService _stripeService;
     
-        public CheckoutSurfaceController(IUmbracoContextAccessor umbracoContextAccessor, IUmbracoDatabaseFactory databaseFactory, IConfiguration configuration,
+        public CheckoutSurfaceController(IStripeService stripeService, IUmbracoContextAccessor umbracoContextAccessor, IUmbracoDatabaseFactory databaseFactory, IConfiguration configuration,
             ServiceContext services, AppCaches appCaches, IProfilingLogger profilingLogger, IPublishedUrlProvider publishedUrlProvider,
             IUmbracoCommerceApi commerceApi)
             : base(umbracoContextAccessor, databaseFactory, services, appCaches, profilingLogger, publishedUrlProvider)
         {
             _commerceApi = commerceApi;
             _configuration = configuration;
+            _stripeService = stripeService;
         }
 
 
@@ -203,16 +206,21 @@ namespace ElectroMaster.Core.Controller
         [HttpPost]
         public IActionResult CreateCheckoutSession(decimal amount, string productName, string orderId, int quantity)
         {
-            var stripeSecretKey = _configuration["StripeSettings:SecretKey"];
-            var stripeCheckout = new StripeCheckoutService();
-         
-            var successUrl = $"{Request.Scheme}://{Request.Host}/cart/success?session_id={{CHECKOUT_SESSION_ID}}&orderId={orderId}";
-            var cancelUrl = $"{Request.Scheme}://{Request.Host}/cart/";
-            var currency = "GBP";
+            
+            var options = new StripeCheckout
+            {
+                SecretKey = _configuration["StripeSettings:SecretKey"],
+                SuccessUrl = $"{Request.Scheme}://{Request.Host}/cart/success?session_id={{CHECKOUT_SESSION_ID}}&orderId={orderId}",
+                CancelUrl = $"{Request.Scheme}://{Request.Host}/cart/",
+                Amount = amount,
+                Currency = "GBP",
+                ProductName = productName,
+                Quantity = quantity
+            };
 
             try
             {
-                var session = stripeCheckout.CreateCheckoutSession(stripeSecretKey, amount, successUrl, cancelUrl, currency, productName, quantity);
+                var session = _stripeService.CreateCheckoutSession(options);            
                 return Redirect(session.Url);
             }
             catch (Exception ex)

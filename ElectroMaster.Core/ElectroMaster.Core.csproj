@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="IconnectUmbracoLibrary" Version="1.0.0" />
+    <PackageReference Include="Iconnect.Umbraco.Utils" Version="5.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.2" />
     <PackageReference Include="Stripe.net" Version="43.9.0" />
     <PackageReference Include="Umbraco.Cms" Version="13.0.0" />
