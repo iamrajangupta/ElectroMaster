@@ -1,4 +1,6 @@
-using ElectroMaster.Core.Extensions;
+using Iconnect.Umbraco.Utils.Interfaces;
+using Iconnect.Umbraco.Utils.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Umbraco.Commerce.Extensions;
 namespace ElectroMaster
 {
@@ -26,7 +28,35 @@ namespace ElectroMaster
                 });
             });
 
-          
+            services.AddScoped<IStripeService, StripeService>();
+            services.AddScoped<IAuthenticationService, AuthenticationService>();
+            services.AddScoped<IContentManagementService, ContentManagementService>();
+
+            // Add authentication
+            services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            })
+            .AddCookie() // Add cookie authentication
+            .AddGoogle("Google", options =>
+            {
+
+                IConfigurationSection googleAuthNSection = _config.GetSection("Authentication:Google");
+                options.ClientId = googleAuthNSection["ClientId"];
+                options.ClientSecret = googleAuthNSection["ClientSecret"];
+                options.CallbackPath = googleAuthNSection["CallbackPath"];
+            })
+            .AddFacebook("Facebook", options =>
+            {
+                // Configure Facebook authentication options
+                IConfigurationSection facebookAuthNSection = _config.GetSection("Authentication:Facebook");
+
+                options.AppId = facebookAuthNSection["AppId"];
+                options.AppSecret = facebookAuthNSection["AppSecret"];
+            });
+
             // Add MVC
             services.AddControllers();
 
@@ -66,7 +96,7 @@ namespace ElectroMaster
                     c.SwaggerEndpoint("/swagger/default/swagger.json", "Default API");
                 }
             });
-        
+
             // Use Umbraco middleware and configure endpoints
             app.UseUmbraco()
                 .WithMiddleware(u =>

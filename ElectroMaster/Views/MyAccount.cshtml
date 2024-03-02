@@ -21,6 +21,10 @@
                             <div class="info-table">
                                 <h4 class="centered-heading">Login</h4>
                                 @await Umbraco.RenderMacroAsync("Login")
+                                @using (Html.BeginUmbracoForm("GoogleSignIn", "AuthSurface"))
+                                {
+                                    <button type="submit" class="btn btn-success">Log in with <i class="fa fa-google" aria-hidden="true"></i>oogle</button>
+                                }
                             </div>
                         </div>
 

@@ -1,4 +1,6 @@
 ﻿using ElectroMaster.Core.Models.System.Auth;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -22,17 +24,17 @@ namespace MemorialsGroundsCore.Controller
     {
         private readonly IMemberManager _memberManager;
         private readonly IMemberService _memberService;
-        private readonly ICoreScopeProvider _scopeProvider;
-        private readonly IMemberGroupService _memberGroupService;
+        private readonly ICoreScopeProvider _scopeProvider;       
         private readonly IMemberTypeService _memberTypeService;
         private readonly IConfiguration _configuration;
+        private readonly IAuthenticationService _authenticationService;
+
 
         public AuthSurfaceController(
         IConfiguration configuration,
         IMemberManager memberManager,
         IMemberService memberService,
-        ICoreScopeProvider scopeProvider,
-        IMemberGroupService memberGroupService,
+        ICoreScopeProvider scopeProvider,   
         IMemberTypeService memberTypeService,
         IUmbracoContextAccessor umbracoContextAccessor,
         IUmbracoDatabaseFactory databaseFactory,
@@ -40,13 +42,14 @@ namespace MemorialsGroundsCore.Controller
         AppCaches appCaches,
         IProfilingLogger profilingLogger,
         IPublishedUrlProvider publishedUrlProvider,
+         IAuthenticationService authenticationService,
         ILogger<AuthSurfaceController> logger)
     : base(umbracoContextAccessor, databaseFactory, services, appCaches, profilingLogger, publishedUrlProvider)
         {
             _memberManager = memberManager;
             _memberService = memberService;
             _scopeProvider = scopeProvider;
-            _memberGroupService = memberGroupService;
+            _authenticationService = authenticationService;           
             _memberTypeService = memberTypeService;
             _configuration = configuration;
         }
@@ -119,6 +122,25 @@ namespace MemorialsGroundsCore.Controller
                 }
                 return CurrentUmbracoPage();
             }
+        }
+        public async Task<IActionResult> GoogleSignIn()
+        {
+
+            var redirectUrl = Url.Action(nameof(GoogleCallback), "AuthSurface", null, Request.Scheme);
+            return Challenge(new AuthenticationProperties { RedirectUri = redirectUrl }, GoogleDefaults.AuthenticationScheme);
+        }
+
+        public async Task<IActionResult> GoogleCallback()
+        {
+            var success = await _authenticationService.SignInWithGoogle(HttpContext, "Member");
+            if (!success)
+            {              
+                return RedirectToAction("/my-account");
+            }
+
+            // Redirect user to the dashboard or home page
+            string returnUrl = "/my-account";
+            return Redirect(returnUrl);
         }
     }
 }
