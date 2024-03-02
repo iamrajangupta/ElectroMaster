@@ -1,5 +1,8 @@
-﻿using Iconnect.Umbraco.Utils.Interfaces;
+﻿using ElectroMaster.Core.Models.System.Product;
+using Iconnect.Umbraco.Utils.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,17 +27,29 @@ namespace ElectroMaster.Core.Controller
         }
 
         [HttpPost]
-        public IActionResult SearchProduct(string productName, string contentTypeAlias)
+        public IActionResult SearchProduct(string productName)
         {
+            var contentTypeAlias = "product";
+            var products = _contentManagementService.SearchContent(contentTypeAlias, productName).ToList();
 
-            if (string.IsNullOrEmpty(productName))
+            var result = new List<object>();
+
+            foreach (var item in products)
             {
-                var product = _contentManagementService.SearchContent(contentTypeAlias, productName);
+                var name = item.Name;
+                var propertyValue = item.Properties.FirstOrDefault(p => p.Key == "productDetail").Value;
+
+                if (propertyValue != null)
+                {
+                    result.Add(new
+                    {
+                        Name = name,
+                        ProductDetail = propertyValue
+                    });
+                }
             }
-            ModelState.AddModelError("orderId", "Invalid order Id");
-            return BadRequest(ModelState);
 
+            return Ok(result);
         }
-
     }
 }
