@@ -17,6 +17,7 @@ using Umbraco.Cms.Infrastructure.Persistence;
 using Umbraco.Cms.Web.Common.Filters;
 using Umbraco.Cms.Web.Common.Security;
 using Umbraco.Cms.Web.Website.Controllers;
+using Microsoft.AspNetCore.Authentication.Facebook;
 
 namespace MemorialsGroundsCore.Controller
 {
@@ -135,6 +136,25 @@ namespace MemorialsGroundsCore.Controller
             var success = await _authenticationService.SignInWithGoogle(HttpContext, "Member");
             if (!success)
             {              
+                return RedirectToAction("/my-account");
+            }
+
+            // Redirect user to the dashboard or home page
+            string returnUrl = "/my-account";
+            return Redirect(returnUrl);
+        }
+
+        public async Task<IActionResult> FacebookSignIn()
+        {
+            var redirectUrl = Url.Action(nameof(FacebookCallback), "AuthSurface", null, Request.Scheme) + "/umbraco-provider-signin-facebook";
+            return Challenge(new AuthenticationProperties { RedirectUri = redirectUrl }, FacebookDefaults.AuthenticationScheme);
+        }
+
+        public async Task<IActionResult> FacebookCallback()
+        {
+            var success = await _authenticationService.SignInWithFacebook(HttpContext, "Member");
+            if (!success)
+            {
                 return RedirectToAction("/my-account");
             }
 

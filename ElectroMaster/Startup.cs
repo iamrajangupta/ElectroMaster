@@ -31,6 +31,7 @@ namespace ElectroMaster
             services.AddScoped<IStripeService, StripeService>();
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IContentManagementService, ContentManagementService>();
+           
 
             // Add authentication
             services.AddAuthentication(options =>
@@ -50,9 +51,8 @@ namespace ElectroMaster
             })
             .AddFacebook("Facebook", options =>
             {
-                // Configure Facebook authentication options
+               
                 IConfigurationSection facebookAuthNSection = _config.GetSection("Authentication:Facebook");
-
                 options.AppId = facebookAuthNSection["AppId"];
                 options.AppSecret = facebookAuthNSection["AppSecret"];
             });
