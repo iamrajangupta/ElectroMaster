@@ -18,6 +18,8 @@ using Umbraco.Cms.Web.Common.Filters;
 using Umbraco.Cms.Web.Common.Security;
 using Umbraco.Cms.Web.Website.Controllers;
 using Microsoft.AspNetCore.Authentication.Facebook;
+using Iconnect.Umbraco.Utils.Interfaces;
+using Iconnect.Umbraco.Utils.Models;
 
 namespace MemorialsGroundsCore.Controller
 {
@@ -25,35 +27,42 @@ namespace MemorialsGroundsCore.Controller
     {
         private readonly IMemberManager _memberManager;
         private readonly IMemberService _memberService;
-        private readonly ICoreScopeProvider _scopeProvider;       
+        private readonly ICoreScopeProvider _scopeProvider;
         private readonly IMemberTypeService _memberTypeService;
         private readonly IConfiguration _configuration;
         private readonly IAuthenticationService _authenticationService;
+        private readonly IMemberRegistrationService _memberRegistrationService;
+        private readonly IEmailService _emailService;
 
 
         public AuthSurfaceController(
-        IConfiguration configuration,
-        IMemberManager memberManager,
-        IMemberService memberService,
-        ICoreScopeProvider scopeProvider,   
-        IMemberTypeService memberTypeService,
-        IUmbracoContextAccessor umbracoContextAccessor,
-        IUmbracoDatabaseFactory databaseFactory,
-        ServiceContext services,
-        AppCaches appCaches,
-        IProfilingLogger profilingLogger,
-        IPublishedUrlProvider publishedUrlProvider,
-         IAuthenticationService authenticationService,
-        ILogger<AuthSurfaceController> logger)
-    : base(umbracoContextAccessor, databaseFactory, services, appCaches, profilingLogger, publishedUrlProvider)
+       IConfiguration configuration,
+       IMemberManager memberManager,
+       IMemberService memberService,
+       ICoreScopeProvider scopeProvider,
+       IMemberTypeService memberTypeService,
+       IUmbracoContextAccessor umbracoContextAccessor,
+       IUmbracoDatabaseFactory databaseFactory,
+       ServiceContext services,
+       AppCaches appCaches,
+       IProfilingLogger profilingLogger,
+       IPublishedUrlProvider publishedUrlProvider,
+       IAuthenticationService authenticationService,
+       IMemberRegistrationService memberRegistrationService,
+       IEmailService emailService, // Add IEmailService here
+       ILogger<AuthSurfaceController> logger)
+       : base(umbracoContextAccessor, databaseFactory, services, appCaches, profilingLogger, publishedUrlProvider)
         {
             _memberManager = memberManager;
             _memberService = memberService;
             _scopeProvider = scopeProvider;
-            _authenticationService = authenticationService;           
+            _authenticationService = authenticationService;
             _memberTypeService = memberTypeService;
             _configuration = configuration;
+            _memberRegistrationService = memberRegistrationService;
+            _emailService = emailService; // Initialize _emailService here
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -61,69 +70,46 @@ namespace MemorialsGroundsCore.Controller
         public async Task<IActionResult> HandleRegisterMember([Bind(Prefix = "registerModel")] MemberRegisterDto model)
         {
 
-            using (ICoreScope scope = _scopeProvider.CreateCoreScope(autoComplete: true))
+            if (_memberService.GetByEmail(model.Email) != null)
             {
-                var memberType = _memberTypeService.Get("Member");
-
-                if (_memberService.GetByEmail(model.Email) != null)
-                {
-                    TempData["emailTaken"] = "emailTaken";
-                    return CurrentUmbracoPage();
-                }
-
-                model.Username = model.UsernameIsEmail || model.Username == null ? model.Email : model.Username;
-                model.Name = model.FirstName + " " + model.LastName;
-
-                var identityUser = MemberIdentityUser.CreateNew(model.Username, model.Email, model.MemberTypeAlias, true, model.Name);
-
-                IdentityResult identityResult = await _memberManager.CreateAsync(identityUser, model.Password);
-
-                if (identityResult.Succeeded)
-                {
-                    IMember? member = _memberService.GetByKey(identityUser.Key);
-
-                    if (member == null)
-                    {
-                        TempData["membernotfound"] = "membernotfound";
-                        return CurrentUmbracoPage();
-                    }
-
-                    foreach (MemberPropertyModel property in model.MemberProperties.Where(p => p.Value != null))
-                    {
-                        if (member.Properties.Contains(property.Alias))
-                        {
-                            member.Properties[property.Alias]?.SetValue(property.Value);
-                        }
-                    }
-                    if (memberType != null)
-                    {
-                        member.SetValue("firstName", model.FirstName);
-                        member.SetValue("lastName", model.LastName);
-                        member.SetValue("addressLine1", model.AddressLine1);
-                        member.SetValue("addressLine2", model.AddressLine2);
-                        member.SetValue("telephone", model.Telephone);
-                        member.SetValue("zipCode", model.ZipCode);
-
-                        _memberService.Save(member);
-                        return CurrentUmbracoPage();
-
-                    }
-                    else
-                    {
-                        TempData["FormErrors"] = "Failed to retrieve member type.";
-                    }
-                }
-                else
-                {
-                    // Handle errors related to user registration
-                    foreach (IdentityError? error in identityResult.Errors)
-                    {
-                        ModelState.AddModelError("registerModel", error.Description);
-                    }
-                }
+                TempData["emailTaken"] = "emailTaken";
                 return CurrentUmbracoPage();
             }
+
+            var registerModel = new RegisterMemberModelBase
+            {
+                UserName = model.Email,
+                Email = model.Email,
+                Password = model.Password,
+                ConfirmPassword = model.ConfirmPassword,
+                MemberTypeAlias = "Member",
+                Name = model.FirstName + " " + model.LastName,
+                MemberProperties = new List<MemberPropModel>
+                {
+                    new MemberPropModel { Alias = "firstName", Value = model.FirstName },
+                    new MemberPropModel { Alias = "lastName", Value = model.LastName },
+                    new MemberPropModel { Alias = "addressLine1", Value = model.AddressLine1 },
+                    new MemberPropModel { Alias = "addressLine2", Value = model.AddressLine2 },
+                    new MemberPropModel { Alias = "telephone", Value = model.Telephone },
+                    new MemberPropModel { Alias = "zipCode", Value = model.ZipCode }
+                }
+            };
+
+            var registerSuccess = await _memberRegistrationService.RegisterMemberAsync(registerModel);
+
+            if (registerSuccess)
+            {
+                return CurrentUmbracoPage(); 
+            }
+            else
+            {
+                TempData["FormErrors"] = "Failed to register member.";
+                return CurrentUmbracoPage(); 
+            }
         }
+
+
+
         public async Task<IActionResult> GoogleSignIn()
         {
 
@@ -135,7 +121,7 @@ namespace MemorialsGroundsCore.Controller
         {
             var success = await _authenticationService.SignInWithGoogle(HttpContext, "Member");
             if (!success)
-            {              
+            {
                 return RedirectToAction("/my-account");
             }
 
@@ -164,6 +150,3 @@ namespace MemorialsGroundsCore.Controller
         }
     }
 }
-
-
-

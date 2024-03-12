@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Facebook" Version="7.0.6" />
-    <PackageReference Include="Iconnect.Umbraco.Utils" Version="5.0.0" />
+    <PackageReference Include="Iconnect.Umbraco.Utils" Version="6.0.4" />
     <PackageReference Include="IconnectUmbracoLibrary" Version="1.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.2" />
     <PackageReference Include="Stripe.net" Version="43.9.0" />

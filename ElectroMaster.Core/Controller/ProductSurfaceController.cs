@@ -30,6 +30,15 @@ namespace ElectroMaster.Core.Controller
         public IActionResult SearchProduct(string productName)
         {
             var contentTypeAlias = "product";
+            var docTypeAlias = "productName";
+
+
+            var GetSectionUsingContentQuerytest = _contentManagementService.GetSectionUsingContentQuery(contentTypeAlias);
+            var GetSectionUsingUmbracoContexttest = _contentManagementService.GetSectionUsingUmbracoContext(contentTypeAlias);
+            var GetSectionByDocumentTypeAliastest = _contentManagementService.GetSectionByDocumentTypeAlias(docTypeAlias); 
+           
+
+
             var products = _contentManagementService.SearchContent(contentTypeAlias, productName).ToList();
 
             var result = new List<object>();

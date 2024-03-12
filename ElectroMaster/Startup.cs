@@ -28,10 +28,13 @@ namespace ElectroMaster
                 });
             });
 
-            services.AddScoped<IStripeService, StripeService>();
-            services.AddScoped<IAuthenticationService, AuthenticationService>();
-            services.AddScoped<IContentManagementService, ContentManagementService>();
-           
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddScoped<ICacheService, CacheService>();
+            services.AddTransient<IChatGptService, ChatGptService>();
+            services.AddTransient<IEmailService, EmailService>();
+            services.AddTransient<IContentManagementService, ContentManagementService>();
+            services.AddTransient<IMemberRegistrationService, MemberRegistrationService>();
+
 
             // Add authentication
             services.AddAuthentication(options =>
@@ -64,6 +67,7 @@ namespace ElectroMaster
             services.AddUmbraco(_env, _config)
                 .AddBackOffice()
                 .AddWebsite()
+              
                 .AddDeliveryApi()
                 .AddUmbracoCommerce(builder =>
                 {
